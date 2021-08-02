@@ -55,7 +55,7 @@ If the advertisements can be parsed, it will always show the `rssi`, `mac`, `typ
 
 ### Parsing tracker data
 
-A minimal example for tracking BLE devices is shown below. To prevent tracking of all devices that pass by, you will have to specify a whitelist wit devices that you want to track. This needs to be a list with MAC addresses in lower case, without `:`. 
+A minimal example for tracking BLE devices is shown below. To prevent tracking of all devices that pass by, you will have to specify a whitelist with devices that you want to track. This needs to be a list with MAC addresses in lower case, without `:`. 
 
 ```python
 from bleparser import BleParser
