@@ -1,2 +1,2 @@
 bleparser
-Cryptodome
+pycryptodomex==3.10.1
