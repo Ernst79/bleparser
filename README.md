@@ -28,7 +28,47 @@ A full list of all supported sensors can be found on the [BLE monitor documentat
 
 ## Usage
 
-The parser result are two two dictionaries, one with sensor data (e.g. temperature readings) and one with tracking data. 
+When using default input parameters, you can use bleparser as follows (more working examples below). 
+
+```python
+ble_parser = BleParser()
+sensor_msg, tracker_msg = ble_parser.parse_data(data)
+```
+
+You can set optional parameters, the example below shows all possible input parameters with default values.
+
+```python
+ble_parser = BleParser(
+    report_unknown=False,
+    discovery=True,
+    filter_duplicates=False,
+    sensor_whitelist=[],
+    tracker_whitelist=[],
+    aeskeys={}
+    )
+```
+
+**report_unknown**
+Report unknown sensors. Default: False
+
+**discovery**
+Boolean. When set to false, only sensors in sensor_whitelist will be parsed. Default: True
+
+**filter_duplicates**
+Boolean. Most sensors send multipe advertisements with the exact same data, to increase reception quality. When set to True, it will filter duplicate advertisements based on a packet_id that is send by the sensor. Only one advertisement will be parsed if it has the same packet_id. Note that not all sensors have packet_ids. 
+
+**sensor_whitelist**
+List with MAC addresses of devices that are being parsed, if `discovery` is set to `False`. If `discovery` is set to `True`, all supported sensors will be parsed. Default: []
+
+**tracker_whitelist**
+List with devices to track. Default: []
+
+**aeskeys**
+Dictionary with mac + encryption key pairs, for sensors that require an encryption key to decrypt the payload. Default: {}
+
+## Result
+
+The parser result are two two dictionaries, one with sensor data (e.g. temperature readings) and one with tracking data.
 
 ### Parsing sensor data
 
