@@ -1,5 +1,5 @@
 """The tests for the Govee ble_parser."""
-from bleparser import BleParser
+from .package.bleparser import BleParser
 
 
 class TestGovee:
