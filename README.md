@@ -19,6 +19,7 @@ Supported sensor brands
 - Kegtron
 - Qingping
 - Ruuvitag
+- SensorPush
 - Teltonika
 - Thermoplus
 - Xiaomi MiBeacon
@@ -49,7 +50,7 @@ ble_parser = BleParser(
 ```
 
 **report_unknown**
-Report unknown sensors. Can be set to `Xiaomi`, `Qingping`, `ATC`, `Mi Scale`, `Kegtron`, `Thermoplus`, `Brifit`, `Govee` or `Ruuvitag` to report unknown sensors of a specific brand to the logger. You can set it to `Other` to report all unknown advertisements to the logger. Default: `False`
+Report unknown sensors. Can be set to `Xiaomi`, `Qingping`, `ATC`, `Mi Scale`, `Kegtron`, `SensorPush`, `Thermoplus`, `Brifit`, `Govee` or `Ruuvitag` to report unknown sensors of a specific brand to the logger. You can set it to `Other` to report all unknown advertisements to the logger. Default: `False`
 
 **discovery**
 Boolean. When set to `False`, only sensors in sensor_whitelist will be parsed. Default: `True`
