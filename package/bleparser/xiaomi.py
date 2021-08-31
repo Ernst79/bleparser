@@ -318,7 +318,23 @@ def obj1018(xobj):
 
 
 def obj1019(xobj):
-    return {"opening": xobj[0]}
+    open = xobj[0]
+    if open == 0:
+        opening = 1
+        status = "opened"
+    elif open == 1:
+        opening = 0
+        status = "closed"
+    elif open == 2:
+        opening = 1
+        status = "closing timeout"
+    elif open == 3:
+        opening = 1
+        status = "device reset"
+    else:
+        opening = 0
+        status = None
+    return {"opening": opening, "status": status}
 
 
 def obj100a(xobj):
