@@ -458,7 +458,7 @@ def parse_xiaomi(self, data, source_mac, rssi):
         sinfo += ', Standard certification'
 
     # check for MAC presence in sensor whitelist, if needed
-    if self.discovery is False and xiaomi_mac.lower() not in self.sensor_whitelist:
+    if self.discovery is False and xiaomi_mac not in self.sensor_whitelist:
         _LOGGER.debug("Discovery is disabled. MAC: %s is not whitelisted!", to_mac(xiaomi_mac))
         return None
 
