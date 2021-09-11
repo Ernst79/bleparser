@@ -17,6 +17,7 @@ Supported sensor brands
 - Govee
 - iNode sensors
 - Kegtron
+- Moat
 - Qingping
 - Ruuvitag
 - SensorPush
