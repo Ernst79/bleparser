@@ -4,15 +4,16 @@ import logging
 from .atc import parse_atc
 from .brifit import parse_brifit
 from .govee import parse_govee
+from .inode import parse_inode
 from .kegtron import parse_kegtron
 from .miscale import parse_miscale
-from .inode import parse_inode
-from .xiaomi import parse_xiaomi
+from .moat import parse_moat
 from .qingping import parse_qingping
 from .ruuvitag import parse_ruuvitag
 from .sensorpush import parse_sensorpush
 from .teltonika import parse_teltonika
 from .thermoplus import parse_thermoplus
+from .xiaomi import parse_xiaomi
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -116,6 +117,9 @@ class BleParser:
                         break
                     if adstruct[0] == 0x0C and comp_id == 0x8801:  # Govee H5179
                         sensor_data = parse_govee(self, adstruct, mac, rssi)
+                        break
+                    if adstruct[0] == 0x15 and comp_id == 0x1000:  # Moat S2
+                        sensor_data = parse_moat(self, adstruct, mac, rssi)
                         break
                     if comp_id == 0x0499:  # Ruuvitag V3/V5
                         sensor_data = parse_ruuvitag(self, adstruct, mac, rssi)
