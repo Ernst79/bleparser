@@ -1,6 +1,6 @@
 # BLE parser for passive BLE advertisements
 
-This pypi package is parsing BLE advertisements to readable data for several sensors and can be used for device tracking, as long as the MAC address is static. The parser was originally developed as part of the [BLE monitor custom component for Home Assistant](https://github.com/custom-components/ble_monitor), but can now be used for other implementations. The package does NOT take care of the data collecting of the BLE advertisements, you can use other packages like [aioblescan](https://github.com/frawau/aioblescan) or [bleson](https://bleson.readthedocs.io/en/latest/index.html) to do that part.
+This pypi package is parsing BLE advertisements to readable data for several sensors and can be used for device tracking, as long as the MAC address is static. The parser was originally developed as part of the [BLE monitor custom component for Home Assistant](https://github.com/custom-components/ble_monitor), but can now be used for other implementations. The package does NOT take care of the data collecting of the BLE advertisements, you can use other packages like [aioblescan](https://github.com/frawau/aioblescan) or [bleson](https://bleson.readthedocs.io/en/latest/index.html) to do that part. An example is given in the [examples folder](https://github.com/Ernst79/bleparser/tree/master/examples).
 
 ## Installation
 
