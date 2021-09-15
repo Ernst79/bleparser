@@ -353,6 +353,7 @@ def obj1001(xobj, device_type):
             result["button"] = button_press_type
         elif device_type == "YLYK01YL":
             result["remote"] = remote_command
+            result["button"] = button_press_type
             if remote_binary is not None:
                 if button_press_type == "single press":
                     result["remote single press"] = remote_binary
@@ -757,7 +758,7 @@ def parse_xiaomi(self, data, source_mac, rssi):
             if obj_length != 0:
                 resfunc = xiaomi_dataobject_dict.get(obj_typecode, None)
                 if resfunc:
-                    if hex(obj_typecode) in ["0x1001", "0x000F"]:
+                    if hex(obj_typecode) in ["0x1001", "0xf"]:
                         result.update(resfunc(object, device_type))
                     else:
                         result.update(resfunc(object))
