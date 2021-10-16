@@ -13,6 +13,7 @@ pip install bleparser
 Supported sensor brands
 
 - ATC (custom firmware for Xiaomi/Qingping sensors)
+- BlueMaestro
 - Brifit
 - Govee
 - iNode sensors
