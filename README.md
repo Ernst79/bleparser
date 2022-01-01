@@ -13,12 +13,15 @@ pip install bleparser
 Supported sensor brands
 
 - ATC (custom firmware for Xiaomi/Qingping sensors)
+- B-parasite
 - BlueMaestro
 - Brifit
 - Govee
-- iNode sensors
+- Inkbird iBBQ
+- iNode
 - Kegtron
 - Moat
+- Oral-B
 - Qingping
 - Ruuvitag
 - SensorPush
@@ -53,7 +56,7 @@ ble_parser = BleParser(
 ```
 
 **report_unknown**
-Report unknown sensors. Can be set to `ATC`, `BlueMaestro`, `Brifit`, `Govee`, `iNode`, `Kegtron`, `Moat`, `Mi Scale`, `Qingping`, `Ruuvitag`, `SensorPush`, `Teltonika`, `Thermoplus`, `Xiaogui` or `Xiaomi` to report unknown sensors of a specific brand to the logger. You can set it to `Other` to report all unknown advertisements to the logger. Default: `False`
+Report unknown sensors. Can be set to `ATC`, `b-parasite`, `BlueMaestro`, `Brifit`, `Govee`, `Inkbird`, `iNode`, `Kegtron`, `Moat`, `Mi Scale`, `Oral-B`, `Qingping`, `Ruuvitag`, `SensorPush`, `Teltonika`, `Thermoplus`, `Xiaogui` or `Xiaomi` to report unknown sensors of a specific brand to the logger. You can set it to `Other` to report all unknown advertisements to the logger. Default: `False`
 
 **discovery**
 Boolean. When set to `False`, only sensors in sensor_whitelist will be parsed. Default: `True`
