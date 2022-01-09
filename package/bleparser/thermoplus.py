@@ -6,7 +6,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def parse_thermoplus(self, data, source_mac, rssi):
-    # check for adstruc length
+    """Thermoplus parser"""
     msg_length = len(data)
     if msg_length == 22:
         device_id = data[2]
@@ -23,6 +23,7 @@ def parse_thermoplus(self, data, source_mac, rssi):
 
         xvalue = data[12:18]
         (volt, temp, humi) = unpack("<HhH", xvalue)
+        batt = 2500
         if volt >= 3000:
             batt = 100
         elif volt >= 2600:
@@ -73,4 +74,5 @@ def parse_thermoplus(self, data, source_mac, rssi):
 
 
 def to_mac(addr: int):
+    """Return formatted MAC address"""
     return ':'.join('{:02x}'.format(x) for x in addr).upper()

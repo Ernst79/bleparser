@@ -1,6 +1,5 @@
 # Parser for SensorPush BLE advertisements
 import logging
-from struct import unpack
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -32,22 +31,23 @@ SENSORPUSH_DATA_TYPES = {
         "humidity"
     ]
 }
-    
+
+
 def decode_values(mfg_data: bytes, device_type_id: int) -> dict:
     pack_params = SENSORPUSH_PACK_PARAMS.get(device_type_id, None)
     if pack_params is None:
-        _LOGGER.error("SensorPush device type id %d unknown" % device_type_id)
+        _LOGGER.error("SensorPush device type id %s unknown", device_type_id)
         return {}
-        
+
     values = {}
-    
+
     packed_values = 0
-    for i in range(1,len(mfg_data)):
-        packed_values += mfg_data[i] << (8 * (i-1))
-    
+    for i in range(1, len(mfg_data)):
+        packed_values += mfg_data[i] << (8 * (i - 1))
+
     mod = 1
     div = 1
-    for i in range(0,len(pack_params)):
+    for i in range(0, len(pack_params)):
         vp = pack_params[i]
         min_value = vp[0]
         max_value = vp[1]
@@ -60,31 +60,21 @@ def decode_values(mfg_data: bytes, device_type_id: int) -> dict:
             value = value / 100.0
         values[data_type] = value
         div *= int((max_value - min_value) / step + step / 2.0) + 1
-        
+
     return values
 
 
 def parse_sensorpush(self, data, source_mac, rssi):
+    """Sensorpush parser"""
     result = {"firmware": "SensorPush"}
     sensorpush_mac = source_mac
     device_type = None
-    
-    # SensorPush puts encoded data in manufacturer data (0xFF)
-    adpayload_start = 0
-    adpayload_size = len(data)
-    while adpayload_size > 1:
-        adstuct_size = data[adpayload_start] + 1
-        if adstuct_size > 1 and adstuct_size <= adpayload_size:
-            adstruct = data[adpayload_start:adpayload_start + adstuct_size]
-            adstuct_type = adstruct[1]
-            if adstuct_type == 0xFF and adstuct_size >= 6:
-                page_id = adstruct[2] & 0x03
-                if page_id == 0:
-                    device_type_id = 64 + (adstruct[2] >> 2)
-                    device_type = SENSORPUSH_DEVICE_TYPES.get(device_type_id, None)
-                    result.update(decode_values(adstruct[2:], device_type_id))
-        adpayload_size -= adstuct_size
-        adpayload_start += adstuct_size
+
+    page_id = data[2] & 0x03
+    if page_id == 0:
+        device_type_id = 64 + (data[2] >> 2)
+        device_type = SENSORPUSH_DEVICE_TYPES.get(device_type_id, None)
+        result.update(decode_values(data[2:], device_type_id))
 
     if device_type is None:
         if self.report_unknown == "SensorPush":
@@ -112,4 +102,5 @@ def parse_sensorpush(self, data, source_mac, rssi):
 
 
 def to_mac(addr: int):
+    """Return formatted MAC address"""
     return ':'.join('{:02x}'.format(x) for x in addr).upper()
