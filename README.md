@@ -1,6 +1,6 @@
 # BLE parser for passive BLE advertisements
 
-This pypi package is parsing BLE advertisements to readable data for several sensors and can be used for device tracking, as long as the MAC address is static. The parser was originally developed as part of the [BLE monitor custom component for Home Assistant](https://github.com/custom-components/ble_monitor), but can now be used for other implementations. The package does NOT take care of the data collecting of the BLE advertisements, you can use other packages like [aioblescan](https://github.com/frawau/aioblescan) or [bleson](https://bleson.readthedocs.io/en/latest/index.html) to do that part. An example is given in the [examples folder](https://github.com/Ernst79/bleparser/tree/master/examples).
+This pypi package is parsing BLE advertisements to readable data for several sensors and can be used for device tracking (fixed MAC address or by UUID). The parser was originally developed as part of the [BLE monitor custom component for Home Assistant](https://github.com/custom-components/ble_monitor), but can now be used for other implementations. The package does NOT take care of the data collecting of the BLE advertisements, you can use other packages like [aioblescan](https://github.com/frawau/aioblescan) or [bleson](https://bleson.readthedocs.io/en/latest/index.html) to do that part. An example is given in the [examples folder](https://github.com/Ernst79/bleparser/tree/master/examples).
 
 ## Installation
 
@@ -12,19 +12,23 @@ pip install bleparser
 
 Supported sensor brands
 
+- AltBeacon
 - ATC (custom firmware for Xiaomi/Qingping sensors)
 - B-parasite
 - BlueMaestro
 - Brifit
 - Govee
-- Inkbird iBBQ
+- iBeacon
+- Inkbird
 - iNode
+- Jinou
 - Kegtron
 - Moat
 - Oral-B
 - Qingping
 - Ruuvitag
 - SensorPush
+- Sensirion
 - Teltonika
 - Thermoplus
 - Xiaogui Scale
@@ -56,7 +60,7 @@ ble_parser = BleParser(
 ```
 
 **report_unknown**
-Report unknown sensors. Can be set to `ATC`, `b-parasite`, `BlueMaestro`, `Brifit`, `Govee`, `Inkbird`, `iNode`, `Kegtron`, `Moat`, `Mi Scale`, `Oral-B`, `Qingping`, `Ruuvitag`, `SensorPush`, `Teltonika`, `Thermoplus`, `Xiaogui` or `Xiaomi` to report unknown sensors of a specific brand to the logger. You can set it to `Other` to report all unknown advertisements to the logger. Default: `False`
+Report unknown sensors. Can be set to `ATC`, `b-parasite`, `BlueMaestro`, `Brifit`, `Govee`, `Inkbird`, `iNode`, `Jinou`, `Kegtron`, `Moat`, `Mi Scale`, `Oral-B`, `Qingping`, `Ruuvitag`, `SensorPush`, `Sensirion`, `Teltonika`, `Thermoplus`, `Xiaogui` or `Xiaomi` to report unknown sensors of a specific brand to the logger. You can set it to `Other` to report all unknown advertisements to the logger. Default: `False`
 
 **discovery**
 Boolean. When set to `False`, only sensors in sensor_whitelist will be parsed. Default: `True`
@@ -65,10 +69,10 @@ Boolean. When set to `False`, only sensors in sensor_whitelist will be parsed. D
 Boolean. Most sensors send multipe advertisements with the exact same data, to increase reception quality. When set to True, it will filter duplicate advertisements based on a packet_id that is send by the sensor. Only one advertisement will be parsed if it has the same packet_id. Note that not all sensors have packet_ids. Default: `False` 
 
 **sensor_whitelist**
-List with MAC addresses of devices that are being parsed, if `discovery` is set to `False`. If `discovery` is set to `True`, all supported sensors will be parsed. Default: `[]`
+List with MAC addresses or UUIDs of devices that are being parsed, if `discovery` is set to `False`. If `discovery` is set to `True`, all supported sensors will be parsed. Default: `[]`
 
 **tracker_whitelist**
-List with devices to track. Default: `[]`
+List with devices (MAC addresses or UUIDs) to track. Default: `[]`
 
 **aeskeys**
 Dictionary with mac + encryption key pairs, for sensors that require an encryption key to decrypt the payload. Default: `{}`
