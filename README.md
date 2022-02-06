@@ -60,21 +60,27 @@ ble_parser = BleParser(
 ```
 
 **report_unknown**
+
 Report unknown sensors. Can be set to `ATC`, `b-parasite`, `BlueMaestro`, `Brifit`, `Govee`, `Inkbird`, `iNode`, `Jinou`, `Kegtron`, `Moat`, `Mi Scale`, `Oral-B`, `Qingping`, `Ruuvitag`, `SensorPush`, `Sensirion`, `Teltonika`, `Thermoplus`, `Xiaogui` or `Xiaomi` to report unknown sensors of a specific brand to the logger. You can set it to `Other` to report all unknown advertisements to the logger. Default: `False`
 
 **discovery**
+
 Boolean. When set to `False`, only sensors in sensor_whitelist will be parsed. Default: `True`
 
 **filter_duplicates**
+
 Boolean. Most sensors send multipe advertisements with the exact same data, to increase reception quality. When set to True, it will filter duplicate advertisements based on a packet_id that is send by the sensor. Only one advertisement will be parsed if it has the same packet_id. Note that not all sensors have packet_ids. Default: `False` 
 
 **sensor_whitelist**
+
 List with MAC addresses or UUIDs of devices that are being parsed, if `discovery` is set to `False`. If `discovery` is set to `True`, all supported sensors will be parsed. Default: `[]`
 
 **tracker_whitelist**
+
 List with devices (MAC addresses or UUIDs) to track. Default: `[]`
 
 **aeskeys**
+
 Dictionary with mac + encryption key pairs, for sensors that require an encryption key to decrypt the payload. Default: `{}`
 
 ## Result
