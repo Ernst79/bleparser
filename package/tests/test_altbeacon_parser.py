@@ -1,6 +1,8 @@
-'''The tests for the AltBeacon ble_parser.'''
-from bleparser import BleParser
+"""The tests for the AltBeacon ble_parser."""
 from uuid import UUID
+
+from bleparser import BleParser
+
 
 class TestAltBeacon:
     '''Tests for the AltBeacon parser'''
@@ -18,7 +20,7 @@ class TestAltBeacon:
         assert sensor_msg['firmware'] == 'AltBeacon'
         assert sensor_msg['manufacturer'] == 'Other'
         assert sensor_msg['rssi'] == -44
-        assert sensor_msg['mac'] == '6D:40:27:85:98:05'
+        assert sensor_msg['mac'] == '6D4027859805'
         assert str(UUID(sensor_msg['uuid'])) == 'd3162f5a-f3ee-4947-99db-09756062d0fc'
         assert sensor_msg['uuid'] == 'd3162f5af3ee494799db09756062d0fc'
         assert sensor_msg['major'] == 90
@@ -39,11 +41,11 @@ class TestAltBeacon:
         assert sensor_msg['firmware'] == 'AltBeacon'
         assert sensor_msg['manufacturer'] == 'Other'
         assert sensor_msg['rssi'] == -44
-        assert sensor_msg['mac'] == '6D:40:27:85:98:05'
+        assert sensor_msg['mac'] == '6D4027859805'
         assert str(UUID(sensor_msg['uuid'])) == 'd3162f5a-f3ee-4947-99db-09756062d0fc'
         assert sensor_msg['uuid'] == 'd3162f5af3ee494799db09756062d0fc'
         assert sensor_msg['major'] == 90
         assert sensor_msg['minor'] == 5
         assert sensor_msg['measured power'] == -60
         assert tracker_msg['tracker_id'] == b'\xd3\x16/Z\xf3\xeeIG\x99\xdb\tu`b\xd0\xfc'
-        assert sensor_msg is not None 
+        assert sensor_msg is not None
