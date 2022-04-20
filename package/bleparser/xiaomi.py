@@ -4,7 +4,7 @@ import math
 import struct
 from Cryptodome.Cipher import AES
 
-from homeassistant.util import datetime
+from datetime import datetime
 
 _LOGGER = logging.getLogger(__name__)
 
