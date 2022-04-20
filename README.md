@@ -12,13 +12,15 @@ pip install bleparser
 
 Supported sensor brands
 
-- AltBeacon
+- Acconeer
+- Air Mentor
 - ATC (custom firmware for Xiaomi/Qingping sensors)
-- B-parasite
 - BlueMaestro
 - Brifit
+- b-parasite
 - Govee
-- iBeacon
+- HA BLE
+- HHCC
 - Inkbird
 - iNode
 - Jinou
@@ -26,14 +28,17 @@ Supported sensor brands
 - Moat
 - Oral-B
 - Qingping
+- Relsib
 - Ruuvitag
-- SensorPush
 - Sensirion
+- SensorPush
+- Switchbot
 - Teltonika
 - Thermoplus
-- Xiaogui Scale
-- Xiaomi MiBeacon
-- Xiaomi Scale
+- Tilt
+- Xiaogui (Scale)
+- Xiaomi (MiBeacon)
+- Xiaomi (MiScale)
 
 A full list of all supported sensors can be found on the [BLE monitor documentation](https://github.com/custom-components/ble_monitor)
 

@@ -18,6 +18,8 @@ def parse_teltonika(self, data, complete_local_name, source_mac, rssi):
         device_type = "Blue Coin T"
     elif complete_local_name[0:3] == "P T":
         device_type = "Blue Puck T"
+    elif complete_local_name[0:5] == "P RHT":
+        device_type = "Blue Puck RHT"
     else:
         device_type = None
 
@@ -70,4 +72,4 @@ def parse_teltonika(self, data, complete_local_name, source_mac, rssi):
 
 def to_mac(addr: int):
     """Return formatted MAC address"""
-    return ':'.join('{:02x}'.format(x) for x in addr).upper()
+    return ':'.join(f'{i:02X}' for i in addr)
