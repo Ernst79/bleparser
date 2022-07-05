@@ -14,6 +14,8 @@ Supported sensor brands
 
 - Acconeer
 - Air Mentor
+- Almendo bluSensor
+- AltBeacon
 - ATC (custom firmware for Xiaomi/Qingping sensors)
 - BlueMaestro
 - Brifit
@@ -21,11 +23,13 @@ Supported sensor brands
 - Govee
 - HA BLE
 - HHCC
+- iBeacon
 - Inkbird
 - iNode
 - Jinou
 - Kegtron
 - KKM
+- Mikrotik
 - Moat
 - Oral-B
 - Qingping
@@ -36,6 +40,7 @@ Supported sensor brands
 - Switchbot
 - Teltonika
 - Thermoplus
+- Thermopro
 - Tilt
 - Xiaogui (Scale)
 - Xiaomi (MiBeacon)
@@ -67,7 +72,7 @@ ble_parser = BleParser(
 
 **report_unknown**
 
-Report unknown sensors. Can be set to `ATC`, `b-parasite`, `BlueMaestro`, `Brifit`, `Govee`, `Inkbird`, `iNode`, `Jinou`, `Kegtron`, `KKM`, `Moat`, `Mi Scale`, `Oral-B`, `Qingping`, `Ruuvitag`, `SensorPush`, `Sensirion`, `Teltonika`, `Thermoplus`, `Xiaogui` or `Xiaomi` to report unknown sensors of a specific brand to the logger. You can set it to `Other` to report all unknown advertisements to the logger. Default: `False`
+Report unknown sensors. Can be set to `ATC`, `b-parasite`, `BlueMaestro`, `Brifit`, `Govee`, `Inkbird`, `iNode`, `Jinou`, `Kegtron`, `KKM`, `Mikrotik`, `Moat`, `Mi Scale`, `Oral-B`, `Qingping`, `Ruuvitag`, `SensorPush`, `Sensirion`, `Teltonika`, `Thermoplus`, `Thermopro`, `Xiaogui` or `Xiaomi` to report unknown sensors of a specific brand to the logger. You can set it to `Other` to report all unknown advertisements to the logger. Default: `False`
 
 **discovery**
 
