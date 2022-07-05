@@ -1,5 +1,4 @@
 """Parser for Almendo bluSensor BLE advertisements"""
-# black -l 79
 import logging
 from struct import unpack
 from .helpers import (
@@ -16,6 +15,7 @@ def parse_almendo(self, data, source_mac, rssi):
         "mac": to_unformatted_mac(source_mac),
         "rssi": rssi,
         "data": False,
+        "packet": "no packet id"
     }
     adstruct_type = data[1]
     if adstruct_type == 0xFF:
@@ -35,7 +35,7 @@ def parse_almendo(self, data, source_mac, rssi):
                     {
                         "temperature": round(temp / 100, 2),
                         "humidity": round(humi / 100, 2),
-                        "co2e": co2e,
+                        "co2": co2e,
                         "tvoc": tvoc,
                         "aiq": aiq,
                         "firmware": "Almendo V1",

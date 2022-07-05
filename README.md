@@ -14,6 +14,8 @@ Supported sensor brands
 
 - Acconeer
 - Air Mentor
+- Almendo bluSensor
+- AltBeacon
 - ATC (custom firmware for Xiaomi/Qingping sensors)
 - BlueMaestro
 - Brifit
@@ -21,6 +23,7 @@ Supported sensor brands
 - Govee
 - HA BLE
 - HHCC
+- iBeacon
 - Inkbird
 - iNode
 - Jinou

@@ -2,7 +2,7 @@
 from bleparser import BleParser
 
 
-class TestSwitchbot:
+class TestAirMentor:
     """Tests for the Air Mentor parser"""
     def test_air_mentor_pro_2_set_1(self):
         """Test Air Mentor parser for Air Mentor Pro 2."""
