@@ -38,8 +38,8 @@ def parse_almendo(self, data, source_mac, rssi):
                         "co2e": co2e,
                         "tvoc": tvoc,
                         "aiq": aiq,
-                        "firmware": "bluSensor V1",
-                        "type": "Mini BSP02AIQ",
+                        "firmware": "Almendo V1",
+                        "type": "bluSensor Mini",
                         "data": True,
                     }
                 )
