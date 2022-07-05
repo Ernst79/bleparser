@@ -3,6 +3,11 @@ import logging
 import struct
 from Cryptodome.Cipher import AES
 
+from .helpers import (
+    to_mac,
+    to_unformatted_mac,
+)
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -74,6 +79,8 @@ DATA_MEAS_DICT = {
     0x0F: ["binary", 1],
     0x10: ["switch", 1],
     0x11: ["opening", 1],
+    0x12: ["co2", 1],
+    0x13: ["tvoc", 1],
 }
 
 
@@ -91,7 +98,10 @@ def parse_ha_ble(self, data, uuid16, source_mac, rssi):
         packet_id = None
     elif uuid16 == 0x181E:
         # Encrypted HA BLE format
-        payload, count_id = decrypt_data(self, data, ha_ble_mac)
+        try:
+            payload, count_id = decrypt_data(self, data, ha_ble_mac)
+        except TypeError:
+            return None
         firmware = "HA BLE (encrypted)"
         if count_id:
             packet_id = parse_uint(count_id)
@@ -173,7 +183,7 @@ def parse_ha_ble(self, data, uuid16, source_mac, rssi):
 
     result.update({
         "rssi": rssi,
-        "mac": ''.join(f'{i:02X}' for i in ha_ble_mac),
+        "mac": to_unformatted_mac(ha_ble_mac),
         "packet": packet_id,
         "type": device_type,
         "firmware": firmware,
@@ -221,8 +231,3 @@ def decrypt_data(self, data, ha_ble_mac):
         )
         return None, None
     return decrypted_payload, count_id
-
-
-def to_mac(addr: int):
-    """Return formatted MAC address"""
-    return ':'.join(f'{i:02X}' for i in addr)
