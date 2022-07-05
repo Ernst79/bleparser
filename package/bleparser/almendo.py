@@ -2,7 +2,10 @@
 # black -l 79
 import logging
 from struct import unpack
-
+from .helpers import (
+    to_mac,
+    to_unformatted_mac,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -10,8 +13,7 @@ _LOGGER = logging.getLogger(__name__)
 def parse_almendo(self, data, source_mac, rssi):
     """Almendo parser"""
     result = {
-        "mac": "".join(f"{x:02X}" for x in source_mac[:]),
-        "type": "Almendo",
+        "mac": to_unformatted_mac(source_mac),
         "rssi": rssi,
         "data": False,
     }
@@ -37,6 +39,7 @@ def parse_almendo(self, data, source_mac, rssi):
                         "tvoc": tvoc,
                         "aiq": aiq,
                         "firmware": "bluSensor V1",
+                        "type": "Mini BSP02AIQ",
                         "data": True,
                     }
                 )
@@ -69,8 +72,3 @@ def parse_almendo(self, data, source_mac, rssi):
             to_mac(source_mac),
         )
     return result
-
-
-def to_mac(addr: int):
-    """Return formatted MAC address"""
-    return ":".join(f"{i:02X}" for i in addr)
