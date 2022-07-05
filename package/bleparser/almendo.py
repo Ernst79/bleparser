@@ -27,7 +27,7 @@ def parse_almendo(self, data, source_mac, rssi):
             if version == 1 and dmodel == 0x0A:
                 # Almendo bluSensor V1 format (BSP02AIQ)
                 # sensor_state, temp, humi, co2e, tvoc, aiq
-                (_, temp, humi, co2e, tvoc, aiq) = unpack(
+                (_, temp, humi, co2e, tvoc, aqi) = unpack(
                     "<BhHHHB", data[10:20]
                 )
 
@@ -37,7 +37,7 @@ def parse_almendo(self, data, source_mac, rssi):
                         "humidity": round(humi / 100, 2),
                         "co2": co2e,
                         "tvoc": tvoc,
-                        "aiq": aiq,
+                        "aqi": aqi,
                         "firmware": "Almendo V1",
                         "type": "bluSensor Mini",
                         "data": True,
