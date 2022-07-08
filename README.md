@@ -50,11 +50,11 @@ A full list of all supported sensors can be found on the [BLE monitor documentat
 
 ## Usage
 
-When using default input parameters, you can use bleparser as follows (more working examples below). 
+When using default input parameters, you can use bleparser with raw BLE data as follows (more working examples below). 
 
 ```python
 ble_parser = BleParser()
-sensor_msg, tracker_msg = ble_parser.parse_data(data)
+sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
 ```
 
 You can set optional parameters, the example below shows all possible input parameters with default values.
@@ -68,7 +68,25 @@ ble_parser = BleParser(
     tracker_whitelist=[],
     aeskeys={}
     )
+sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
 ```
+
+It is also possible to use advertisement data directly. 
+
+```python
+ble_parser = BleParser()
+sensor_data, tracker_data = self.parse_advertisement(
+    mac,
+    rssi,
+    service_class_uuid16,
+    service_class_uuid128,
+    local_name,
+    service_data_list,
+    man_spec_data_list
+)
+```
+
+`service_data_list` and `man_spec_data_list` have to be in a list, as a BKE advertisement can contain multiple service data/manufacturer specific data packets. 
 
 **report_unknown**
 
@@ -109,7 +127,7 @@ data_string = "043e2502010000219335342d5819020106151695fe5020aa01da219335342d580
 data = bytes(bytearray.fromhex(data_string))
 
 ble_parser = BleParser()
-sensor_msg, tracker_msg = ble_parser.parse_data(data)
+sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
 print(sensor_msg)
 ```
 
@@ -137,7 +155,7 @@ track_mac = bytes.fromhex(track_mac.replace(":", ""))
 tracker_whitelist.append(track_mac.lower())
 
 ble_parser = BleParser(tracker_whitelist=tracker_whitelist)
-sensor_msg, tracker_msg = ble_parser.parse_data(data)
+sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
 print(tracker_msg)
 ```
 

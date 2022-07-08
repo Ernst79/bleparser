@@ -66,7 +66,7 @@ SENSOR_BUFFER = defaultdict(dict)
 
 ## Define callback
 def process_hci_events(data):
-    sensor_data, tracker_data = parser.parse_data(data)
+    sensor_data, tracker_data = parser.parse_raw_data(data)
 
     if tracker_data:
         mac = ':'.join(wrap(tracker_data.pop("mac"), 2))
