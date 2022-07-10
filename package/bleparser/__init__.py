@@ -229,7 +229,7 @@ class BleParser:
                     comp_id = (man_spec_data[3] << 8) | man_spec_data[2]
                     data_len = man_spec_data[0]
                     # Filter on Company Identifier
-                    if comp_id == 0x0001 and data_len in [0x09, 0x0C]:
+                    if comp_id == 0x0001 and data_len in [0x09, 0x0C, 0x22, 0x25]:
                         # Govee H5101/H5102/H5177
                         sensor_data = parse_govee(self, man_spec_data, mac, rssi)
                         break
@@ -272,7 +272,7 @@ class BleParser:
                         # Air Mentor
                         sensor_data = parse_airmentor(self, man_spec_data, mac, rssi)
                         break
-                    elif comp_id == 0x8801 and data_len == 0x0C:
+                    elif comp_id == 0x8801 and data_len in [0x0C, 0x25]:
                         # Govee H5179
                         sensor_data = parse_govee(self, man_spec_data, mac, rssi)
                         break
@@ -280,7 +280,7 @@ class BleParser:
                         # Brifit
                         sensor_data = parse_brifit(self, man_spec_data, mac, rssi)
                         break
-                    elif comp_id == 0xEC88 and data_len in [0x09, 0x0A, 0x0C]:
+                    elif comp_id == 0xEC88 and data_len in [0x09, 0x0A, 0x0C, 0x22, 0x24, 0x25]:
                         # Govee H5051/H5071/H5072/H5075/H5074
                         sensor_data = parse_govee(self, man_spec_data, mac, rssi)
                         break
@@ -314,15 +314,15 @@ class BleParser:
                         # Jinou BEC07-5
                         sensor_data = parse_jinou(self, man_spec_data, mac, rssi)
                         break
-                    elif service_class_uuid16 == 0x5182 and data_len == 0x14:
+                    elif service_class_uuid16 == 0x5182 and data_len in [0x14, 0x2D]:
                         # Govee H5182
                         sensor_data = parse_govee(self, man_spec_data, mac, rssi)
                         break
-                    elif service_class_uuid16 == 0x5183 and data_len == 0x11:
+                    elif service_class_uuid16 == 0x5183 and data_len in [0x11, 0x2A]:
                         # Govee H5183
                         sensor_data = parse_govee(self, man_spec_data, mac, rssi)
                         break
-                    elif service_class_uuid16 == 0x5185 and data_len == 0x17:
+                    elif service_class_uuid16 == 0x5185 and data_len in [0x17, 0x30]:
                         # Govee H5185
                         sensor_data = parse_govee(self, man_spec_data, mac, rssi)
                         break
