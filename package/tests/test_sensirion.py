@@ -16,7 +16,7 @@ class TestSensirion:
         assert sensor_msg["type"] == "MyCO2"
         assert sensor_msg["mac"] == "F8EADC3C6735"
         assert sensor_msg["packet"] == "no packet id"
-        assert sensor_msg["data"] == True
+        assert sensor_msg["data"]
         assert sensor_msg["temperature"] == 25.63
         assert sensor_msg["humidity"] == 36.16
         assert sensor_msg["co2"] == 1035
@@ -34,7 +34,7 @@ class TestSensirion:
         assert sensor_msg["type"] == "SHT40 Gadget"
         assert sensor_msg["mac"] == "FF67C0C3E2E7"
         assert sensor_msg["packet"] == "no packet id"
-        assert sensor_msg["data"] == True
+        assert sensor_msg["data"]
         assert sensor_msg["temperature"] == 27.47
         assert sensor_msg["humidity"] == 39.5
         assert sensor_msg["rssi"] == -71
