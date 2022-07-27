@@ -47,15 +47,18 @@ def parse_altbeacon(self, data: str, comp_id: int, source_mac: str, rssi: float)
             CONF_MEASURED_POWER: power,
         }
 
-        sensor_data = {
-            CONF_TYPE: DEVICE_TYPE,
-            CONF_PACKET: "no packet id",
-            CONF_FIRMWARE: DEVICE_TYPE,
-            CONF_MANUFACTURER: MANUFACTURER_DICT[comp_id] \
-                if comp_id in MANUFACTURER_DICT \
-                else DEFAULT_MANUFACTURER,
-            CONF_DATA: True
-        } | tracker_data
+        sensor_data = dict(
+            {
+                CONF_TYPE: DEVICE_TYPE,
+                CONF_PACKET: "no packet id",
+                CONF_FIRMWARE: DEVICE_TYPE,
+                CONF_MANUFACTURER: MANUFACTURER_DICT[comp_id] \
+                    if comp_id in MANUFACTURER_DICT \
+                    else DEFAULT_MANUFACTURER,
+                CONF_DATA: True
+            },
+            **tracker_data
+        )
     else:
         if self.report_unknown == DEVICE_TYPE:
             _LOGGER.info(

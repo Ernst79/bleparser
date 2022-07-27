@@ -45,14 +45,17 @@ def parse_tilt(self, data: str, source_mac: str, rssi: float):
             CONF_MEASURED_POWER: power,
         }
 
-        sensor_data = {
-            CONF_TYPE: device_type,
-            CONF_PACKET: "no packet id",
-            CONF_FIRMWARE: "Tilt",
-            CONF_DATA: True,
-            CONF_TEMPERATURE: (major - 32) * 5 / 9,
-            CONF_GRAVITY: minor / 1000,
-        } | tracker_data
+        sensor_data = dict(
+            {
+                CONF_TYPE: device_type,
+                CONF_PACKET: "no packet id",
+                CONF_FIRMWARE: "Tilt",
+                CONF_DATA: True,
+                CONF_TEMPERATURE: (major - 32) * 5 / 9,
+                CONF_GRAVITY: minor / 1000,
+            },
+            **tracker_data
+        )
     else:
         if self.report_unknown == "Tilt":
             _LOGGER.info(
