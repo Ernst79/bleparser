@@ -47,12 +47,15 @@ def parse_ibeacon(self, data: str, source_mac: str, rssi: float):
             CONF_CYPRESS_HUMIDITY: 125.0 * (minor & 0xff00) / 65536 - 6,
         }
 
-        sensor_data = {
-            CONF_TYPE: DEVICE_TYPE,
-            CONF_PACKET: "no packet id",
-            CONF_FIRMWARE: DEVICE_TYPE,
-            CONF_DATA: True
-        } | tracker_data
+        sensor_data = dict(
+            {
+                CONF_TYPE: DEVICE_TYPE,
+                CONF_PACKET: "no packet id",
+                CONF_FIRMWARE: DEVICE_TYPE,
+                CONF_DATA: True
+            },
+            **tracker_data
+        )
     else:
         if self.report_unknown == DEVICE_TYPE:
             _LOGGER.info(
