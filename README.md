@@ -14,18 +14,17 @@ Supported sensor brands
 
 - Acconeer
 - Air Mentor
-- Almendo bluSensor
-- AltBeacon
+- Amazfit
 - ATC (custom firmware for Xiaomi/Qingping sensors)
 - BlueMaestro
 - Brifit
+- BTHome
 - b-parasite
 - Govee
-- HA BLE
 - HHCC
-- iBeacon
 - Inkbird
 - iNode
+- Jaalee
 - Jinou
 - Kegtron
 - KKM
@@ -37,6 +36,7 @@ Supported sensor brands
 - Ruuvitag
 - Sensirion
 - SensorPush
+- SmartDry
 - Switchbot
 - Teltonika
 - Thermoplus
@@ -90,7 +90,7 @@ sensor_data, tracker_data = self.parse_advertisement(
 
 **report_unknown**
 
-Report unknown sensors. Can be set to `ATC`, `b-parasite`, `BlueMaestro`, `Brifit`, `Govee`, `Inkbird`, `iNode`, `Jinou`, `Kegtron`, `KKM`, `Mikrotik`, `Moat`, `Mi Scale`, `Oral-B`, `Qingping`, `Ruuvitag`, `SensorPush`, `Sensirion`, `Teltonika`, `Thermoplus`, `Thermopro`, `Xiaogui` or `Xiaomi` to report unknown sensors of a specific brand to the logger. You can set it to `Other` to report all unknown advertisements to the logger. Default: `False`
+Report unknown sensors. Can be set to `Acconeer`, `Air Mentor`, `Amazfit`, `ATC`, `b-parasite`, `BlueMaestro`, `Brifit`, `BTHome`, `Govee`, `HHCC`, `Inkbird`, `iNode`, `Jaalee`, `Jinou`, `Kegtron`, `KKM`, `Mikrotik`, `Moat`, `Mi Scale`, `Oral-B`, `Qingping`, `Relsib`, `Ruuvitag`, `SensorPush`, `Sensirion`, `SmartDry`, `Switchbot`, `Teltonika`, `Thermoplus`, `Thermopro`, `Tilt`, `Xiaogui` or `Xiaomi` to report unknown sensors of a specific brand to the logger. You can set it to `Other` to report all unknown advertisements to the logger. Default: `False`
 
 **discovery**
 
