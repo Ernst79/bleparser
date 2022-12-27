@@ -1,5 +1,5 @@
 """The tests for the BTHome (DIY sensor) ble_parser."""
-from ble_monitor.ble_parser import BleParser
+from bleparser import BleParser
 
 
 class TestBTHome:
