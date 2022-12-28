@@ -18,5 +18,5 @@ class TestJaalee:
         assert sensor_msg["packet"] == "no packet id"
         assert sensor_msg["data"]
         assert sensor_msg["temperature"] == 7.41
-        assert sensor_msg["humidity"] == 38.08
+        assert sensor_msg["humidity"] == 38.06
         assert sensor_msg["rssi"] == -52
