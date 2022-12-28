@@ -6,18 +6,20 @@ from .acconeer import parse_acconeer
 from .airmentor import parse_airmentor
 from .almendo import parse_almendo
 from .altbeacon import parse_altbeacon
+from .amazfit import parse_amazfit
 from .atc import parse_atc
 from .bluemaestro import parse_bluemaestro
 from .bparasite import parse_bparasite
 from .brifit import parse_brifit
+from .bthome import parse_bthome
 from .const import TILT_TYPES
 from .govee import parse_govee
 from .helpers import to_mac, to_unformatted_mac
-from .ha_ble import parse_ha_ble
 from .hhcc import parse_hhcc
 from .ibeacon import parse_ibeacon
 from .inkbird import parse_inkbird
 from .inode import parse_inode
+from .jaalee import parse_jaalee
 from .jinou import parse_jinou
 from .kegtron import parse_kegtron
 from .kkm import parse_kkm
@@ -196,12 +198,20 @@ class BleParser:
                         sensor_data = parse_miscale(self, service_data, mac, rssi)
                         break
                     elif uuid16 in [0x181C, 0x181E]:
-                        # UUID16 = User Data and Bond Management (used by BLE HA)
-                        sensor_data = parse_ha_ble(self, service_data, uuid16, mac, rssi)
+                        # UUID16 = User Data and Bond Management (used by BTHome V1)
+                        sensor_data = parse_bthome(self, service_data, uuid16, mac, rssi)
                         break
                     elif uuid16 in [0xAA20, 0xAA21, 0xAA22] and local_name == "ECo":
                         # UUID16 = Relsib
                         sensor_data = parse_relsib(self, service_data, mac, rssi)
+                        break
+                    elif uuid16 == 0xF525:
+                        # UUID16 = Jaalee
+                        sensor_data = parse_jaalee(self, service_data, mac, rssi)
+                        break
+                    elif uuid16 == 0xFCD2:
+                        # UUID16 = Allterco Robotics ltd (BTHome V2)
+                        sensor_data = parse_bthome(self, service_data, uuid16, mac, rssi)
                         break
                     elif uuid16 in [0xFD3D, 0x0D00]:
                         # UUID16 = unknown (used by Switchbot)
@@ -228,6 +238,10 @@ class BleParser:
                             # UUID16 = Google (used by Ruuvitag V2/V4)
                             sensor_data = parse_ruuvitag(self, service_data, mac, rssi)
                             break
+                    elif uuid16 == 0xFEE0:
+                        # UUID16 = Anhui Huami Information Technology Co., Ltd. (Amazfit)
+                        sensor_data = parse_amazfit(self, service_data, mac, rssi)
+                        break
                     elif uuid16 == 0xFFF9:
                         # UUID16 = FIDO (used by Cleargrass)
                         sensor_data = parse_qingping(self, service_data, mac, rssi)
@@ -289,7 +303,7 @@ class BleParser:
                         # Sensirion
                         sensor_data = parse_sensirion(self, man_spec_data, local_name, mac, rssi)
                         break
-                    elif comp_id in [0x2121, 0x2122] and data_len == 0x0B:
+                    elif comp_id in [0x2111, 0x2112, 0x2121, 0x2122] and data_len == 0x0B:
                         # Air Mentor
                         sensor_data = parse_airmentor(self, man_spec_data, mac, rssi)
                         break
@@ -348,11 +362,11 @@ class BleParser:
                         sensor_data = parse_govee(self, man_spec_data, mac, rssi)
                         break
                     elif service_class_uuid16 == 0xF0FF:
-                        if comp_id in [0x0010, 0x0011, 0x0015] and data_len in [0x15, 0x17]:
+                        if comp_id in [0x0010, 0x0011, 0x0015, 0x0018] and data_len in [0x15, 0x17]:
                             # Thermoplus
                             sensor_data = parse_thermoplus(self, man_spec_data, mac, rssi)
                             break
-                        elif (comp_id in [0x0000, 0x0001] or local_name in ["iBBQ", "sps", "tps"]) and (
+                        elif (comp_id in [0x0000, 0x0001] or local_name in ["iBBQ", "xBBQ", "sps", "tps"]) and (
                             data_len in [0x0A, 0x0D, 0x0F, 0x13, 0x17]
                         ):
                             # Inkbird
