@@ -36,11 +36,15 @@ import paho.mqtt.client as mqtt
 
 SENSORS = [
     "C4:7C:8D:61:B0:52",
-    "C4:7C:8D:62:D5:55"
+    "C4:7C:8D:62:D5:55",
+    "A4:C1:38:56:53:84",
     ]
 TRACKERS = [
     "C4:7C:8D:62:DD:9B"
     ]
+AESKEYS = {
+    "A4:C1:38:56:53:84": "a115210eed7a88e50ad52662e732a9fb",
+}
 MQTT_HOST = "IPV4 or hostname"
 MQTT_PORT = 1883
 MQTT_USER = "username"
@@ -59,7 +63,8 @@ parser = BleParser(
     discovery=False,
     filter_duplicates=True,
     sensor_whitelist=[bytes.fromhex(mac.replace(":", "").lower()) for mac in SENSORS],
-    tracker_whitelist=[bytes.fromhex(mac.replace(":", "").lower()) for mac in TRACKERS]
+    tracker_whitelist=[bytes.fromhex(mac.replace(":", "").lower()) for mac in TRACKERS],
+    aeskeys={bytes.fromhex(mac.replace(":", "").lower()): bytes.fromhex(aeskey) for mac, aeskey in AESKEYS.items()},
 )
 
 SENSOR_BUFFER = defaultdict(dict)
