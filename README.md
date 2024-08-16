@@ -86,7 +86,7 @@ sensor_data, tracker_data = self.parse_advertisement(
 )
 ```
 
-`service_data_list` and `man_spec_data_list` have to be in a list, as a BKE advertisement can contain multiple service data/manufacturer specific data packets. 
+`service_data_list` and `man_spec_data_list` have to be in a list, as a BLE advertisement can contain multiple service data/manufacturer specific data packets. 
 
 **report_unknown**
 
@@ -104,6 +104,11 @@ Boolean. Most sensors send multipe advertisements with the exact same data, to i
 
 List with MAC addresses or UUIDs of devices that are being parsed, if `discovery` is set to `False`. If `discovery` is set to `True`, all supported sensors will be parsed. Default: `[]`
 
+The MAC addresses should be in bytes. 
+```python
+    sensor_whitelist=[bytes.fromhex("A4:C1:38:56:53:84".replace(":", ""))],
+```
+
 **tracker_whitelist**
 
 List with devices (MAC addresses or UUIDs) to track. Default: `[]`
@@ -111,6 +116,11 @@ List with devices (MAC addresses or UUIDs) to track. Default: `[]`
 **aeskeys**
 
 Dictionary with mac + encryption key pairs, for sensors that require an encryption key to decrypt the payload. Default: `{}`
+
+The mac and encryption key pairs should be in bytes. 
+```python
+    aeskeys={bytes.fromhex("A4:C1:38:56:53:84".replace(":", "")): bytes.fromhex("a115210eed7a88e50ad52662e732a9fb") for mac, aeskey in AESKEYS.items()},
+```
 
 ## Result
 
