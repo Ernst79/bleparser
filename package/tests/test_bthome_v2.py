@@ -474,7 +474,7 @@ class TestBTHome:
         assert sensor_msg["rssi"] == -52
 
     def test_bthome_v2_double_temperature(self):
-        """Test BTHome parser for double temperature measurement, which isn't supported (yet)"""
+        """Test BTHome parser for double temperature measurement"""
         data_string = "043E1A02010000A5808FE648540E0201060A16D2FC40450101450301CC"
         data = bytes(bytearray.fromhex(data_string))
 
@@ -487,5 +487,27 @@ class TestBTHome:
         assert sensor_msg["mac"] == "5448E68F80A5"
         assert sensor_msg["packet"] == "no packet id"
         assert sensor_msg["data"]
-        assert sensor_msg["temperature"] == 25.9
+        assert sensor_msg["temperature_1"] == 25.7
+        assert sensor_msg["temperature_2"] == 25.9
         assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_quadruple_button(self):
+        """Test BTHome parser for quadruple button"""
+        data_string = "043e2002010301ca2474b6c67c140201061016d2fc4400c201643a003a033a013a00bd"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "7CC6B67424CA"
+        assert sensor_msg["packet"] == 194
+        assert sensor_msg["battery"] == 100
+        assert sensor_msg["data"]
+        assert sensor_msg["button_1"] == 0
+        assert sensor_msg["button_2"] == 3
+        assert sensor_msg["button_3"] == 1
+        assert sensor_msg["button_4"] == 0
+        assert sensor_msg["rssi"] == -67

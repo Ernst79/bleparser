@@ -205,6 +205,9 @@ MEAS_TYPES: dict[int, MeasTypes] = {
         meas_format="moisture",
         unit_of_measurement="%",
     ),
+    0x3A: MeasTypes(
+        meas_format="button",
+    ),
     0x3D: MeasTypes(
         meas_format="count",
         data_length=2,

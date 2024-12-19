@@ -220,6 +220,13 @@ def parse_payload(self, payload, sw_version):
             )
             continue
 
+        # Old Shelly buttons send 0xFE when held, rather than 0x80.
+        if (
+            MEAS_TYPES[meas["measurement type"]].meas_format == "button" and
+            meas["measurement data"] == b"\xFE"
+        ):
+            meas["measurement data"] = b'\x80'
+
         if meas["measurement type"] in dup_meas_types:
             # Add a postfix for advertisements with multiple measurements of the same type
             postfix_counter = postfix_dict.get(meas["measurement type"], 0) + 1
@@ -230,7 +237,7 @@ def parse_payload(self, payload, sw_version):
 
         meas_type = MEAS_TYPES[meas["measurement type"]]
         meas_unit = meas_type.unit_of_measurement
-        meas_format = meas_type.meas_format
+        meas_format = f"{meas_type.meas_format}{postfix}"
         meas_factor = meas_type.factor
         value: None | str | int | float
 
