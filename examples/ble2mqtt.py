@@ -34,6 +34,9 @@ import aioblescan as aiobs
 from bleparser import BleParser
 import paho.mqtt.client as mqtt
 
+import os
+LOCALCONFIG = "config.local.py"
+
 SENSORS = [
     "C4:7C:8D:61:B0:52",
     "C4:7C:8D:62:D5:55",
@@ -51,6 +54,10 @@ MQTT_USER = "username"
 MQTT_PASS = "password"
 MQTT_SENSOR_BASE_TOPIC = ""
 MQTT_TRACKER_BASE_TOPIC = ""
+
+# Take local config if exists
+if os.path.exists(LOCALCONFIG):
+    exec(open(LOCALCONFIG).read())
 
 ## Setup MQTT connection
 client = mqtt.Client()
