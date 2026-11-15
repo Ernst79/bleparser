@@ -22,6 +22,7 @@ def parse_thermopro(self, data: bytes, device_type, mac: bytes):
         result = {
             "temperature": temp / 10,
             "humidity": humi,
+            "battery": (10, 50, 100)[min(data[6] & 0x03, 2)] if len(data) > 6 else None,
             "battery low": batt_low
         }
     else:
