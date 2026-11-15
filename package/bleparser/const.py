@@ -7,7 +7,6 @@ CONF_PACKET: Final = "packet"
 CONF_FIRMWARE: Final = "firmware"
 CONF_DATA: Final = "data"
 CONF_MANUFACTURER: Final = "manufacturer"
-CONF_RSSI: Final = "rssi"
 
 CONF_BATTERY: Final = "battery"
 CONF_CONDUCTIVITY: Final = "conductivity"
@@ -576,4 +575,9 @@ TILT_TYPES: Final = {
     0xA495BB60C5B14B44B5121370F02D74DE: "Blue",
     0xA495BB70C5B14B44B5121370F02D74DE: "Yellow",
     0xA495BB80C5B14B44B5121370F02D74DE: "Pink",
+}
+
+
+JAALEE_TYPES: Final = {
+    0xEBEFD08370A247C89837E7B5634DF525: "JHT",
 }

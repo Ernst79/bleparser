@@ -8,6 +8,11 @@ This pypi package is parsing BLE advertisements to readable data for several sen
 pip install bleparser
 ```
 
+The passive parsers and parser fixtures are synchronized with
+[`custom-components/ble_monitor` at `51bf13b994a1`](https://github.com/custom-components/ble_monitor/commit/51bf13b994a1f9c8b72c345401f48d81dd96f984).
+Home Assistant integration code and active Bluetooth key-retrieval tools are not
+included. The package remains standalone and supports Python 3.11 through 3.15.
+
 ## Supported sensors
 
 Supported sensor brands
@@ -16,31 +21,47 @@ Supported sensor brands
 - Air Mentor
 - Amazfit
 - ATC (custom firmware for Xiaomi/Qingping sensors)
+- Beckett
 - BlueMaestro
+- Blustream
 - Brifit
 - BTHome
 - b-parasite
+- Chef iQ
+- Eddystone-TLM
 - Govee
+- Grundfos
 - HHCC
+- HolyIOT
+- Hormann
 - Inkbird
 - iNode
 - Jaalee
 - Jinou
 - Kegtron
 - KKM
+- Laica
+- Michelin
 - Mikrotik
+- Minew
 - Moat
+- Mocreo
 - Oral-B
+- Oras
 - Qingping
 - Relsib
 - Ruuvitag
 - Sensirion
 - SensorPush
+- Senssun
 - SmartDry
+- Sonoff
 - Switchbot
 - Teltonika
+- Thermobeacon (including Brifit and Thermoplus)
 - Thermoplus
 - Thermopro
+- Thermosafer
 - Tilt
 - Xiaogui (Scale)
 - Xiaomi (MiBeacon)
@@ -56,6 +77,19 @@ When using default input parameters, you can use bleparser with raw BLE data as 
 ble_parser = BleParser()
 sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
 ```
+
+For an HCI event containing multiple legacy or extended advertisement reports,
+use `parse_raw_data_reports` to receive all recognized reports:
+
+```python
+for sensor_msg, tracker_msg in ble_parser.parse_raw_data_reports(data):
+    print(sensor_msg, tracker_msg)
+```
+
+`parse_raw_data` continues to return one `(sensor_msg, tracker_msg)` pair (the
+first recognized report), or `(None, None)` when nothing is recognized.
+Truncated reports are ignored, and malformed reports are logged at debug level
+without discarding other complete reports in the event.
 
 You can set optional parameters, the example below shows all possible input parameters with default values.
 
@@ -90,7 +124,13 @@ sensor_data, tracker_data = self.parse_advertisement(
 
 **report_unknown**
 
-Report unknown sensors. Can be set to `Acconeer`, `Air Mentor`, `Amazfit`, `ATC`, `b-parasite`, `BlueMaestro`, `Brifit`, `BTHome`, `Govee`, `HHCC`, `Inkbird`, `iNode`, `Jaalee`, `Jinou`, `Kegtron`, `KKM`, `Mikrotik`, `Moat`, `Mi Scale`, `Oral-B`, `Qingping`, `Relsib`, `Ruuvitag`, `SensorPush`, `Sensirion`, `SmartDry`, `Switchbot`, `Teltonika`, `Thermoplus`, `Thermopro`, `Tilt`, `Xiaogui` or `Xiaomi` to report unknown sensors of a specific brand to the logger. You can set it to `Other` to report all unknown advertisements to the logger. Default: `False`
+Report unknown sensors. Can be set to `Acconeer`, `Air Mentor`, `Amazfit`, `ATC`, `b-parasite`, `BlueMaestro`, `BTHome`, `Govee`, `HHCC`, `Inkbird`, `iNode`, `Jaalee`, `Jinou`, `Kegtron`, `KKM`, `Mikrotik`, `Moat`, `Mi Scale`, `Oral-B`, `Qingping`, `Relsib`, `Ruuvitag`, `SensorPush`, `Sensirion`, `SmartDry`, `Switchbot`, `Teltonika`, `Thermopro`, `Tilt`, `Xiaogui` or `Xiaomi` to report unknown sensors of a specific brand to the logger. You can set it to `Other` to report all unknown advertisements to the logger. Default: `False`
+
+Additional `report_unknown` names are `Beckett`, `Blustream`, `Chef iQ`,
+`Eddystone`, `Grundfos`, `HolyIOT`, `Hormann`, `Minew`, `Sonoff`,
+`Thermobeacon`, and `Thermosafer`. Brifit and Thermoplus
+advertisements now use the upstream `Thermobeacon` firmware name; use
+`report_unknown="Thermobeacon"` for these devices.
 
 **discovery**
 
@@ -108,6 +148,10 @@ The MAC addresses should be in bytes.
 ```python
     sensor_whitelist=[bytes.fromhex("A4:C1:38:56:53:84".replace(":", ""))],
 ```
+
+For iBeacon, AltBeacon, and Tilt sensor data, whitelist the beacon UUID as
+bytes rather than only its MAC address. A whitelisted UUID also allows devices
+whose MAC address changes.
 
 **tracker_whitelist**
 
@@ -148,6 +192,11 @@ The output of `sensor_msg` is:
 ```
 
 If the advertisements can be parsed, it will always show the `rssi`, `mac`, `type`, `packet`, `firmware` and `data` fields. Additional fields with the measurements, like `temperature` and `humidity` will be available depending on the sensor type.
+
+Sensor and tracker results now also include `local_name` (an empty string when
+the advertisement has no valid UTF-8 local name). Measurement names and values
+follow the pinned upstream parser, including newer BTHome measurements and
+device-specific corrections.
 
 ### Parsing tracker data
 

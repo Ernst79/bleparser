@@ -1,10 +1,7 @@
 """Parser for Sensirion BLE advertisements"""
 import logging
 
-from .helpers import (
-    to_mac,
-    to_unformatted_mac,
-)
+from .helpers import to_mac, to_unformatted_mac
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -16,27 +13,22 @@ SENSIRION_DEVICES = [
 ]
 
 
-def parse_sensirion(self, data, complete_local_name, source_mac, rssi):
+def parse_sensirion(self, data: bytes, complete_local_name: str, mac: bytes):
     """Sensirion parser"""
     result = {"firmware": "Sensirion"}
-    sensirion_mac = source_mac
     device_type = complete_local_name
 
     if device_type not in SENSIRION_DEVICES:
         if self.report_unknown == "Sensirion":
             _LOGGER.info(
-                "BLE ADV from UNKNOWN Sensirion DEVICE: %s RSSI: %s, MAC: %s, ADV: %s",
+                "BLE ADV from UNKNOWN Sensirion DEVICE: %s, MAC: %s, ADV: %s",
                 device_type,
-                rssi,
-                to_mac(source_mac),
+                to_mac(mac),
                 data.hex()
             )
         return None
 
-    # check for MAC presence in sensor whitelist, if needed
-    if self.discovery is False and source_mac not in self.sensor_whitelist:
-        _LOGGER.debug(
-            "Discovery is disabled. MAC: %s is not whitelisted!", to_mac(source_mac))
+    if len(data) < 8:
         return None
 
     # not all of the following values are used yet, but this explains the full protocol
@@ -55,8 +47,7 @@ def parse_sensirion(self, data, complete_local_name, source_mac, rssi):
         else:
             result.update(samples)
             result.update({
-                "rssi": rssi,
-                "mac": to_unformatted_mac(sensirion_mac),
+                "mac": to_unformatted_mac(mac),
                 "type": device_type,
                 "packet": "no packet id",
                 "data": True
@@ -67,12 +58,9 @@ def parse_sensirion(self, data, complete_local_name, source_mac, rssi):
         _LOGGER.debug("Advertisement Type %s not supported ", advertisementType)
         return None
 
-
-'''
-The following functions are based on Sensirion_GadgetBle_Lib.cpp from  https://github.com/Sensirion/arduino-ble-gadget/
-support from other devices should be easily added by looking at GadgetBle::setDataType and updating _parse_data_type 
-accordingly. Note that the device name also has to be added to the SENSIRION_DEVICES list.
-'''
+# The following functions are based on Sensirion_GadgetBle_Lib.cpp from  https://github.com/Sensirion/arduino-ble-gadget/
+# support from other devices should be easily added by looking at GadgetBle::setDataType and updating _parse_data_type
+# accordingly. Note that the device name also has to be added to the SENSIRION_DEVICES list.
 
 
 def _parse_data_type(advSampleType, byte_data):

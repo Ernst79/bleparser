@@ -2,24 +2,19 @@
 import base64
 import logging
 import math
-from struct import unpack
+import struct
 
-from .helpers import (
-    to_mac,
-    to_unformatted_mac,
-)
+from .helpers import to_mac, to_unformatted_mac
 
 _LOGGER = logging.getLogger(__name__)
 
 
-def parse_ruuvitag(self, data, source_mac, rssi):
+def parse_ruuvitag(self, data: bytes, mac: bytes):
     """Ruuvitag parser"""
-    ruuvitag_mac = source_mac
     device_type = "Ruuvitag"
     result = {
-        "mac": to_unformatted_mac(ruuvitag_mac),
+        "mac": to_unformatted_mac(mac),
         "type": device_type,
-        "rssi": rssi,
         "data": False,
     }
     adstuct_type = data[1]
@@ -36,7 +31,7 @@ def parse_ruuvitag(self, data, source_mac, rssi):
                     encoded = encoded[:8]
                 decoded = bytearray(base64.b64decode(encoded, "-_"))
 
-                (version, humi, temp, frac, pres) = unpack(">BBbBH", decoded)
+                (version, humi, temp, frac, press) = struct.unpack(">BBbBH", decoded)
 
                 temp_val = (temp & 127) + frac / 100
                 sign = (temp >> 7) & 1
@@ -48,14 +43,14 @@ def parse_ruuvitag(self, data, source_mac, rssi):
                     {
                         "humidity": humi * 0.5,
                         "temperature": temperature,
-                        "pressure": round((pres + 50000) / 100, 2),
+                        "pressure": round((press + 50000) / 100, 2),
                         "firmware": "Ruuvitag V" + str(version),
                         "packet": "no packet id",
                         "data": True,
                     }
                 )
-            except base64.binascii.Error:
-                _LOGGER.debug("Encoded value: %s not valid", encoded)
+            except (base64.binascii.Error, struct.error):
+                _LOGGER.debug("Encoded value: %s from data: %s not valid", encoded, data.hex())
                 return None
         else:
             result = None
@@ -63,10 +58,15 @@ def parse_ruuvitag(self, data, source_mac, rssi):
         # version 3 and 5
         comp_id = (data[3] << 8) | data[2]
         if comp_id == 0x0499:
-            version = data[4]
-            if version == 3:
+            if len(data) < 5:
+                result = None
+            elif data[4] == 3 and len(data) < 18:
+                result = None
+            elif data[4] == 5 and len(data) < 22:
+                result = None
+            elif data[4] == 3:
                 # Ruuvitag V3 format
-                (version, humi, temp, frac, pres, accx, accy, accz, volt) = unpack(
+                (version, humi, temp, frac, press, accx, accy, accz, volt) = struct.unpack(
                     ">BBbBHhhhH", data[4:18]
                 )
 
@@ -88,7 +88,7 @@ def parse_ruuvitag(self, data, source_mac, rssi):
                     {
                         "humidity": humi * 0.5,
                         "temperature": temperature,
-                        "pressure": round((pres + 50000) / 100, 2),
+                        "pressure": round((press + 50000) / 100, 2),
                         "acceleration": math.sqrt(accx ** 2 + accy ** 2 + accz ** 2),
                         "acceleration x": accx,
                         "acceleration y": accy,
@@ -99,15 +99,15 @@ def parse_ruuvitag(self, data, source_mac, rssi):
                         "data": True,
                     }
                 )
-            elif version == 5:
+            elif data[4] == 5:
                 # Ruuvitag V5 format
-                (version, temp, humi, pres, accx, accy, accz, power, move_cnt, packet_id) = unpack(
+                (version, temp, humi, press, accx, accy, accz, power, move_cnt, packet_id) = struct.unpack(
                     ">BhHHhhhHBH", data[4:22]
                 )
 
                 # Check for duplicate messages
                 try:
-                    prev_packet = self.lpacket_ids[ruuvitag_mac]
+                    prev_packet = self.lpacket_ids[mac]
                 except KeyError:
                     # start with empty first packet
                     prev_packet = None
@@ -115,14 +115,14 @@ def parse_ruuvitag(self, data, source_mac, rssi):
                     if self.filter_duplicates is True:
                         # only process new messages
                         return None
-                self.lpacket_ids[ruuvitag_mac] = packet_id
+                self.lpacket_ids[mac] = packet_id
                 if prev_packet is None:
                     if self.filter_duplicates is True:
                         # ignore first message after a restart
                         return None
                 # Check for an increased movement counter
                 try:
-                    prev_movement = self.movements_list[ruuvitag_mac]
+                    prev_movement = self.movements_list[mac]
                 except KeyError:
                     # start with empty movement first
                     prev_movement = None
@@ -130,13 +130,13 @@ def parse_ruuvitag(self, data, source_mac, rssi):
                     motion = 0
                 else:
                     motion = 1
-                self.movements_list[ruuvitag_mac] = move_cnt
+                self.movements_list[mac] = move_cnt
 
                 result.update(
                     {
                         "temperature": round(temp / 200, 2),
                         "humidity": round(humi / 400, 2),
-                        "pressure": round((pres + 50000) / 100, 2),
+                        "pressure": round((press + 50000) / 100, 2),
                         "acceleration": math.sqrt(accx ** 2 + accy ** 2 + accz ** 2),
                         "acceleration x": accx,
                         "acceleration y": accy,
@@ -175,9 +175,8 @@ def parse_ruuvitag(self, data, source_mac, rssi):
     if result is None:
         if self.report_unknown == "Ruuvitag":
             _LOGGER.info(
-                "BLE ADV from UNKNOWN Ruuvitag DEVICE: RSSI: %s, MAC: %s, ADV: %s",
-                rssi,
-                to_mac(source_mac),
+                "BLE ADV from UNKNOWN Ruuvitag DEVICE: MAC: %s, ADV: %s",
+                to_mac(mac),
                 data.hex(),
             )
         return None
@@ -196,14 +195,11 @@ def parse_ruuvitag(self, data, source_mac, rssi):
         else:
             batt = 0
         result["battery"] = round(batt, 1)
-    # check for MAC presence in sensor whitelist, if needed
-    if self.discovery is False and ruuvitag_mac not in self.sensor_whitelist:
-        _LOGGER.debug("Discovery is disabled. MAC: %s is not whitelisted!", to_mac(ruuvitag_mac))
-        return None
+
     if version < 5:
         _LOGGER.info(
             "Firmware version %i is outdated, consider updating your ruuvitag with MAC: %s to view all sensors",
             version,
-            to_mac(ruuvitag_mac),
+            to_mac(mac),
         )
     return result

@@ -3,7 +3,7 @@ from bleparser import BleParser
 
 
 class TestKegtron:
-
+    """Tests for the Kegtron parser"""
     def test_kegtron_kt100(self):
         """Test kegtron parser for KT-100."""
         data_string = "043e2b02010400759b5c5ecfd01f1effffff49ef138802e20153696e676c6520506f7274000000000000000000ae"
@@ -25,6 +25,20 @@ class TestKegtron:
         assert sensor_msg["port name"] == "Single Port"
         assert sensor_msg["volume dispensed port 1"] == 0.738
         assert sensor_msg["rssi"] == -82
+
+    def test_kegtron_invalid_utf8_port_name(self):
+        """Test Kegtron parser replaces invalid UTF-8 in the port name."""
+        # Based on the KT-100 fixture, with its first port-name byte replaced by 0xFF.
+        data_string = "043e2b02010400759b5c5ecfd01f1effffff49ef138802e201ff696e676c6520506f7274000000000000000000ae"
+        data = bytes(bytearray.fromhex(data_string))
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["type"] == "Kegtron KT-100"
+        assert sensor_msg["mac"] == "D0CF5E5C9B75"
+        assert sensor_msg["port name"] == "\ufffdingle Port"
+        assert sensor_msg["volume dispensed port 1"] == 0.738
 
     def test_kegtron_kt200(self):
         """Test kegtron parser for KT-200."""

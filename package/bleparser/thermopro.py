@@ -2,51 +2,39 @@
 import logging
 from struct import unpack
 
-from .helpers import (
-    to_mac,
-    to_unformatted_mac,
-)
+from .helpers import to_mac, to_unformatted_mac
 
 _LOGGER = logging.getLogger(__name__)
 
 
-def parse_thermopro(self, data, device_type, source_mac, rssi):
+def parse_thermopro(self, data: bytes, device_type, mac: bytes):
     """Thermopro parser"""
     if device_type in ["TP357", "TP359"]:
         firmware = "Thermopro"
-        thermopro_mac = source_mac
-
-        xvalue = data[3:6]
-        (temp, humi) = unpack("<hB", xvalue)
+        xvalue = data[3:7]
+        (temp, humi, batt) = unpack("<hBB", xvalue)
+        if batt == 2:
+            # full battery
+            batt_low = 0
+        else:
+            # low battery
+            batt_low = 1
         result = {
             "temperature": temp / 10,
             "humidity": humi,
+            "battery low": batt_low
         }
     else:
-        device_type = None
-    if device_type is None:
         if self.report_unknown == "Thermopro":
             _LOGGER.info(
-                "BLE ADV from UNKNOWN Thermopro DEVICE: RSSI: %s, MAC: %s, ADV: %s",
-                rssi,
-                to_mac(source_mac),
+                "BLE ADV from UNKNOWN Thermopro DEVICE: MAC: %s, ADV: %s",
+                to_mac(mac),
                 data.hex()
             )
         return None
 
-    # check for MAC presence in message and in service data
-    if thermopro_mac != source_mac:
-        _LOGGER.debug("Invalid MAC address for Thermopro device")
-        return None
-
-    # check for MAC presence in sensor whitelist, if needed
-    if self.discovery is False and thermopro_mac not in self.sensor_whitelist:
-        _LOGGER.debug("Discovery is disabled. MAC: %s is not whitelisted!", to_mac(thermopro_mac))
-        return None
-
     result.update({
-        "rssi": rssi,
-        "mac": to_unformatted_mac(thermopro_mac),
+        "mac": to_unformatted_mac(mac),
         "type": device_type,
         "packet": "no packet id",
         "firmware": firmware,

@@ -2,15 +2,12 @@
 import logging
 from struct import unpack
 
-from .helpers import (
-    to_mac,
-    to_unformatted_mac,
-)
+from .helpers import to_mac, to_unformatted_mac
 
 _LOGGER = logging.getLogger(__name__)
 
 
-def parse_qingping(self, data, source_mac, rssi):
+def parse_qingping(self, data: bytes, mac: bytes):
     """Qingping parser"""
     msg_length = len(data)
     if msg_length > 12:
@@ -22,23 +19,28 @@ def parse_qingping(self, data, source_mac, rssi):
             device_type = "CGG1"
         elif device_id == 0x09:
             device_type = "CGP1W"
+        elif device_id == 0x10:
+            device_type = "CGDK2"
         elif device_id == 0x12:
             device_type = "CGPR1"
+        elif device_id == 0x18:
+            device_type = "CGP23W"
         elif device_id == 0x0C:
             device_type = "CGD1"
-        elif device_id == 0x0E:
+        elif device_id in [0x0E, 0x24]:
             device_type = "CGDN1"
+        elif device_id in [0x5D, 0x33]:
+            device_type = "CGP22C"
         else:
             device_type = None
 
         if device_type == "CGDN1":
-            qingping_mac = source_mac
+            qingping_mac = mac
         else:
             qingping_mac_reversed = data[6:12]
             qingping_mac = qingping_mac_reversed[::-1]
 
         result = {
-            "rssi": rssi,
             "packet": "no packet id",
         }
         xdata_point = 14
@@ -53,8 +55,8 @@ def parse_qingping(self, data, source_mac, rssi):
                     batt = data[xdata_point]
                     result.update({"battery": batt})
                 elif xdata_id == 0x07 and xdata_size == 2:
-                    (pres,) = unpack("<H", data[xdata_point:xdata_point + xdata_size])
-                    result.update({"pressure": pres / 10})
+                    (press,) = unpack("<H", data[xdata_point:xdata_point + xdata_size])
+                    result.update({"pressure": press / 10})
                 elif xdata_id == 0x08 and xdata_size == 4:
                     (motion, illuminance_1, illuminance_2) = unpack(
                         "<BHB", data[xdata_point:xdata_point + xdata_size]
@@ -91,26 +93,19 @@ def parse_qingping(self, data, source_mac, rssi):
     if device_type is None:
         if self.report_unknown == "Qingping":
             _LOGGER.info(
-                "BLE ADV from UNKNOWN Qingping DEVICE: RSSI: %s, MAC: %s, ADV: %s",
-                rssi,
-                to_mac(source_mac),
+                "BLE ADV from UNKNOWN Qingping DEVICE: MAC: %s, ADV: %s",
+                to_mac(mac),
                 data.hex()
             )
         return None
 
     # check for MAC presence in message and in service data
-    if qingping_mac != source_mac:
+    if qingping_mac != mac:
         _LOGGER.debug("Invalid MAC address for Qingping device")
         return None
 
-    # check for MAC presence in sensor whitelist, if needed
-    if self.discovery is False and qingping_mac not in self.sensor_whitelist:
-        _LOGGER.debug("Discovery is disabled. MAC: %s is not whitelisted!", to_mac(qingping_mac))
-        return None
-
     result.update({
-        "rssi": rssi,
-        "mac": to_unformatted_mac(qingping_mac),
+        "mac": to_unformatted_mac(mac),
         "type": device_type,
         "firmware": firmware,
         "data": True

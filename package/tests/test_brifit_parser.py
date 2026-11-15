@@ -12,7 +12,7 @@ class TestBrifit:
         ble_parser = BleParser()
         sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
 
-        assert sensor_msg["firmware"], "Brifit"
+        assert sensor_msg["firmware"] == "Thermobeacon"
         assert sensor_msg["type"], "T201"
         assert sensor_msg["mac"], "A4C13874B085"
         assert sensor_msg["packet"], "no packet id"

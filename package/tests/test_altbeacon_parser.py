@@ -1,4 +1,4 @@
-"""The tests for the AltBeacon ble_parser."""
+'''The tests for the AltBeacon ble_parser.'''
 from uuid import UUID
 
 from bleparser import BleParser
