@@ -11,7 +11,7 @@ pip install bleparser
 The passive parsers and parser fixtures are synchronized with
 [`custom-components/ble_monitor` at `51bf13b994a1`](https://github.com/custom-components/ble_monitor/commit/51bf13b994a1f9c8b72c345401f48d81dd96f984).
 Home Assistant integration code and active Bluetooth key-retrieval tools are not
-included. The package remains standalone and supports Python 3.8 and later.
+included. The package remains standalone and supports Python 3.11 through 3.15.
 
 ## Supported sensors
 
