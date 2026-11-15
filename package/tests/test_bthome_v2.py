@@ -1,4 +1,6 @@
-"""The tests for the BTHome V2 (DIY sensor) ble_parser."""
+"""The tests for the BTHome (DIY sensor) ble_parser."""
+import datetime
+
 from bleparser import BleParser
 
 
@@ -303,8 +305,93 @@ class TestBTHome:
         assert sensor_msg["moisture"] == 3.07
         assert sensor_msg["rssi"] == -52
 
+    def test_bthome_v2_battery_low(self):
+        """Test BTHome parser for battery low measurement"""
+        data_string = "043E1602010000A5808FE648540A0201060616D2FC401501CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["battery low"] == 1
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_battery_charging(self):
+        """Test BTHome parser for battery charging measurement"""
+        data_string = "043E1602010000A5808FE648540A0201060616D2FC401601CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["battery charging"] == 1
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_carbon_monoxide(self):
+        """Test BTHome parser for carbon monoxide measurement"""
+        data_string = "043E1602010000A5808FE648540A0201060616D2FC401701CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["carbon monoxide"] == 1
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_cold(self):
+        """Test BTHome parser for cold measurement"""
+        data_string = "043E1602010000A5808FE648540A0201060616D2FC401801CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["cold"] == 1
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_connectivity(self):
+        """Test BTHome parser for connectivity measurement"""
+        data_string = "043E1602010000A5808FE648540A0201060616D2FC401901CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["connectivity"] == 1
+        assert sensor_msg["rssi"] == -52
+
     def test_bthome_v2_door(self):
-        """Test BTHome parser for binary door sensor (open/closed)"""
+        """Test BTHome parser for door measurement"""
         data_string = "043E1602010000A5808FE648540A0201060616D2FC401A01CC"
         data = bytes(bytearray.fromhex(data_string))
 
@@ -320,8 +407,59 @@ class TestBTHome:
         assert sensor_msg["door"] == 1
         assert sensor_msg["rssi"] == -52
 
+    def test_bthome_v2_garage_door(self):
+        """Test BTHome parser for garage door measurement"""
+        data_string = "043E1602010000A5808FE648540A0201060616D2FC401B01CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["garage door"] == 1
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_gas_detected(self):
+        """Test BTHome parser for gas detected measurement"""
+        data_string = "043E1602010000A5808FE648540A0201060616D2FC401C00CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["gas detected"] == 0
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_heat(self):
+        """Test BTHome parser for heat measurement"""
+        data_string = "043E1602010000A5808FE648540A0201060616D2FC401D01CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["heat"] == 1
+        assert sensor_msg["rssi"] == -52
+
     def test_bthome_v2_light(self):
-        """Test BTHome parser for binary light sensor (light/dark)"""
+        """Test BTHome parser for light measurement"""
         data_string = "043E1602010000A5808FE648540A0201060616D2FC401E01CC"
         data = bytes(bytearray.fromhex(data_string))
 
@@ -338,7 +476,7 @@ class TestBTHome:
         assert sensor_msg["rssi"] == -52
 
     def test_bthome_v2_lock(self):
-        """Test BTHome parser for binary lock sensor (locked/unlocked)"""
+        """Test BTHome parser for lock measurement"""
         data_string = "043E1602010000A5808FE648540A0201060616D2FC401F01CC"
         data = bytes(bytearray.fromhex(data_string))
 
@@ -354,8 +492,25 @@ class TestBTHome:
         assert sensor_msg["lock"] == 1
         assert sensor_msg["rssi"] == -52
 
+    def test_bthome_v2_moisture_detected(self):
+        """Test BTHome parser for moisture detected measurement"""
+        data_string = "043E1602010000A5808FE648540A0201060616D2FC402001CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["moisture detected"] == 1
+        assert sensor_msg["rssi"] == -52
+
     def test_bthome_v2_motion(self):
-        """Test BTHome parser for binary motion sensor (motion detected/no motion)"""
+        """Test BTHome parser for motion measurement"""
         data_string = "043E1602010000A5808FE648540A0201060616D2FC402101CC"
         data = bytes(bytearray.fromhex(data_string))
 
@@ -369,6 +524,125 @@ class TestBTHome:
         assert sensor_msg["packet"] == "no packet id"
         assert sensor_msg["data"]
         assert sensor_msg["motion"] == 1
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_moving(self):
+        """Test BTHome parser for moving measurement"""
+        data_string = "043E1602010000A5808FE648540A0201060616D2FC402201CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["moving"] == 1
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_occupancy(self):
+        """Test BTHome parser for occupancy measurement"""
+        data_string = "043E1602010000A5808FE648540A0201060616D2FC402300CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["occupancy"] == 0
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_plug(self):
+        """Test BTHome parser for plug measurement"""
+        data_string = "043E1602010000A5808FE648540A0201060616D2FC402401CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["plug"] == 1
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_presence(self):
+        """Test BTHome parser for presence measurement"""
+        data_string = "043E1602010000A5808FE648540A0201060616D2FC402501CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["presence"] == 1
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_problem(self):
+        """Test BTHome parser for problem measurement"""
+        data_string = "043E1602010000A5808FE648540A0201060616D2FC402601CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["problem"] == 1
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_running(self):
+        """Test BTHome parser for running measurement"""
+        data_string = "043E1602010000A5808FE648540A0201060616D2FC402700CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["running"] == 0
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_safety(self):
+        """Test BTHome parser for safety measurement"""
+        data_string = "043E1602010000A5808FE648540A0201060616D2FC402801CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["safety"] == 1
         assert sensor_msg["rssi"] == -52
 
     def test_bthome_v2_smoke(self):
@@ -385,7 +659,75 @@ class TestBTHome:
         assert sensor_msg["mac"] == "5448E68F80A5"
         assert sensor_msg["packet"] == "no packet id"
         assert sensor_msg["data"]
-        assert sensor_msg["smoke detector"] == 1
+        assert sensor_msg["smoke"] == 1
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_sound(self):
+        """Test BTHome parser for binary sound detector"""
+        data_string = "043E1602010000A5808FE648540A0201060616D2FC402A01CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["sound"] == 1
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_tamper(self):
+        """Test BTHome parser for binary tamper detector"""
+        data_string = "043E1602010000A5808FE648540A0201060616D2FC402B01CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["tamper"] == 1
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_vibration(self):
+        """Test BTHome parser for binary vibration sensor"""
+        data_string = "043E1602010000A5808FE648540A0201060616D2FC402C01CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["vibration"] == 1
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_window(self):
+        """Test BTHome parser for binary window sensor"""
+        data_string = "043E1602010000A5808FE648540A0201060616D2FC402D01CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["window"] == 1
         assert sensor_msg["rssi"] == -52
 
     def test_bthome_v2_humidity_1_byte(self):
@@ -422,6 +764,41 @@ class TestBTHome:
         assert sensor_msg["moisture"] == 51
         assert sensor_msg["rssi"] == -52
 
+    def test_bthome_v2_button(self):
+        """Test BTHome parser for button sensor measurement"""
+        data_string = "043E1602010000A5808FE648540A0201060616D2FC403A02CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["button"] == "double press"
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_dimmer(self):
+        """Test BTHome parser for dimmer sensor measurement"""
+        data_string = "043E1702010000A5808FE648540B0201060716D2FC403C0103CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["dimmer"] == "rotate left"
+        assert sensor_msg["steps"] == 3
+        assert sensor_msg["rssi"] == -52
+
     def test_bthome_v2_count_2_bytes(self):
         """Test BTHome parser for count measurement with 2 bytes"""
         data_string = "043E1702010000A5808FE648540B0201060716D2FC403D3321CC"
@@ -456,9 +833,9 @@ class TestBTHome:
         assert sensor_msg["count"] == 556969523
         assert sensor_msg["rssi"] == -52
 
-    def test_bthome_v2_temperature_2_bytes_1_digit(self):
-        """Test BTHome parser for temperature measurement with 2 bytes and 1 digit"""
-        data_string = "043E1702010000A5808FE648540B0201060716D2FC40450101CC"
+    def test_bthome_v2_rotation(self):
+        """Test BTHome parser for rotation measurement"""
+        data_string = "043E1702010000A5808FE648540B0201060716D2FC403F020CCC"
         data = bytes(bytearray.fromhex(data_string))
 
         # pylint: disable=unused-variable
@@ -470,11 +847,366 @@ class TestBTHome:
         assert sensor_msg["mac"] == "5448E68F80A5"
         assert sensor_msg["packet"] == "no packet id"
         assert sensor_msg["data"]
-        assert sensor_msg["temperature"] == 25.7
+        assert sensor_msg["rotation"] == 307.4
         assert sensor_msg["rssi"] == -52
 
+    def test_bthome_v2_distance_mm(self):
+        """Test BTHome parser for distance measurement"""
+        data_string = "043E1702010000A5808FE648540B0201060716D2FC40400C00CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["distance mm"] == 12
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_distance_m(self):
+        """Test BTHome parser for distance measurement"""
+        data_string = "043E1702010000A5808FE648540B0201060716D2FC40414E00CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["distance"] == 7.8
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_duration(self):
+        """Test BTHome parser for distance measurement"""
+        data_string = "043E1802010000A5808FE648540C0201060816D2FC40424E3400CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["duration"] == 13.390
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_current(self):
+        """Test BTHome parser for current measurement"""
+        data_string = "043E1702010000A5808FE648540B0201060716D2FC40434E34CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["current"] == 13.39
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_speed(self):
+        """Test BTHome parser for speed measurement"""
+        data_string = "043E1702010000A5808FE648540B0201060716D2FC40444E34CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["speed"] == 133.90
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_temperature_1_digit(self):
+        """Test BTHome parser for temperature measurement"""
+        data_string = "043E1702010000A5808FE648540B0201060716D2FC40451101CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["temperature"] == 27.3
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_uv_index(self):
+        """Test BTHome parser for uv_index measurement"""
+        data_string = "043E1602010000A5808FE648540A0201060616D2FC404632CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["uv index"] == 5.0
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_volume_liter(self):
+        """Test BTHome parser for volume measurement in liter"""
+        data_string = "043E1702010000A5808FE648540B0201060716D2FC40478756CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["volume"] == 2215.1
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_volume_milliliter(self):
+        """Test BTHome parser for volume measurement in milliliter"""
+        data_string = "043E1702010000A5808FE648540B0201060716D2FC4048DC87CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["volume mL"] == 34780
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_volume_flow_rate(self):
+        """Test BTHome parser for volume flow rate measurement"""
+        data_string = "043E1702010000A5808FE648540B0201060716D2FC4049DC87CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["volume flow rate"] == 34.78
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_voltage_1_digit(self):
+        """Test BTHome parser for voltage measurement with 1 digit"""
+        data_string = "043E1702010000A5808FE648540B0201060716D2FC404A020CCC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["voltage"] == 307.4
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_gas_3_bytes(self):
+        """Test BTHome parser for gas measurement with 3 bytes"""
+        data_string = "043E1802010000A5808FE648540C0201060816D2FC404B138A14CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["gas"] == 1346.067
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_gas_4_bytes(self):
+        """Test BTHome parser for gas measurement with 4 bytes"""
+        data_string = "043E1902010000A5808FE648540D0201060916D2FC404C41018A01CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["gas"] == 25821.505
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_energy_4_bytes(self):
+        """Test BTHome parser for energy measurement with 4 bytes"""
+        data_string = "043E1902010000A5808FE648540D0201060916D2FC404D12138A14CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["energy"] == 344593.170
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_volume_4_bytes(self):
+        """Test BTHome parser for volume measurement with 4 bytes"""
+        data_string = "043E1902010000A5808FE648540D0201060916D2FC404E87562A01CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["volume"] == 19551.879
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_water_4_bytes(self):
+        """Test BTHome parser for water measurement with 4 bytes"""
+        data_string = "043E1902010000A5808FE648540D0201060916D2FC404F87562A01CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["water"] == 19551.879
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_timestamp(self):
+        """Test BTHome parser for timestamp measurement"""
+        data_string = "043E1902010000A5808FE648540D0201060916D2FC40505d396164CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["timestamp"] == datetime.datetime(2023, 5, 14, 19, 41, 17, tzinfo=datetime.timezone.utc)
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_acceleration(self):
+        """Test BTHome parser for acceleration measurement"""
+        data_string = "043E1702010000A5808FE648540B0201060716D2FC40518756CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["acceleration"] == 22.151
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_gyroscope(self):
+        """Test BTHome parser for gyroscope measurement"""
+        data_string = "043E1702010000A5808FE648540B0201060716D2FC40528756CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["gyroscope"] == 22.151
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_text(self):
+        """Test BTHome parser for text measurement"""
+        data_string = "043E2202010000A5808FE64854160201061216D2FC40530C48656C6C6F20576F726C6421CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg["firmware"] == "BTHome V2"
+        assert sensor_msg["type"] == "BTHome"
+        assert sensor_msg["mac"] == "5448E68F80A5"
+        assert sensor_msg["packet"] == "no packet id"
+        assert sensor_msg["data"]
+        assert sensor_msg["text"] == "Hello World!"
+        assert sensor_msg["rssi"] == -52
+
+    def test_bthome_v2_invalid_utf8_text(self):
+        """Test BTHome parser does not crash on a malformed (non-UTF-8) text measurement."""
+        # Same as test_bthome_v2_text, but the 12-byte "Hello World!" payload is
+        # replaced with 12 invalid UTF-8 bytes (0x80 is never a valid lead byte).
+        data_string = "043E2202010000A5808FE64854160201061216D2FC40530C808080808080808080808080CC"
+        data = bytes(bytearray.fromhex(data_string))
+
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        # No exception raised, and no bogus "text" measurement is produced: this
+        # advertisement only contains the malformed text object, so the result is None.
+        assert sensor_msg is None
+
     def test_bthome_v2_double_temperature(self):
-        """Test BTHome parser for double temperature measurement"""
+        """Test BTHome parser for double temperature measurement, which isn't supported (yet)"""
         data_string = "043E1A02010000A5808FE648540E0201060A16D2FC40450101450301CC"
         data = bytes(bytearray.fromhex(data_string))
 
@@ -487,27 +1219,5 @@ class TestBTHome:
         assert sensor_msg["mac"] == "5448E68F80A5"
         assert sensor_msg["packet"] == "no packet id"
         assert sensor_msg["data"]
-        assert sensor_msg["temperature_1"] == 25.7
-        assert sensor_msg["temperature_2"] == 25.9
+        assert sensor_msg["temperature"] == 25.9
         assert sensor_msg["rssi"] == -52
-
-    def test_bthome_v2_quadruple_button(self):
-        """Test BTHome parser for quadruple button"""
-        data_string = "043e2002010301ca2474b6c67c140201061016d2fc4400c201643a003a033a013a00bd"
-        data = bytes(bytearray.fromhex(data_string))
-
-        # pylint: disable=unused-variable
-        ble_parser = BleParser()
-        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
-
-        assert sensor_msg["firmware"] == "BTHome V2"
-        assert sensor_msg["type"] == "BTHome"
-        assert sensor_msg["mac"] == "7CC6B67424CA"
-        assert sensor_msg["packet"] == 194
-        assert sensor_msg["battery"] == 100
-        assert sensor_msg["data"]
-        assert sensor_msg["button_1"] == 0
-        assert sensor_msg["button_2"] == 3
-        assert sensor_msg["button_3"] == 1
-        assert sensor_msg["button_4"] == 0
-        assert sensor_msg["rssi"] == -67

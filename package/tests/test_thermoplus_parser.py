@@ -12,7 +12,7 @@ class TestThermoplus:
         ble_parser = BleParser()
         sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
 
-        assert sensor_msg["firmware"] == "Thermoplus"
+        assert sensor_msg["firmware"] == "Thermobeacon"
         assert sensor_msg["type"] == "Smart hygrometer"
         assert sensor_msg["mac"] == "068800001627"
         assert sensor_msg["packet"] == "no packet id"
@@ -31,7 +31,7 @@ class TestThermoplus:
         ble_parser = BleParser()
         sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
 
-        assert sensor_msg["firmware"] == "Thermoplus"
+        assert sensor_msg["firmware"] == "Thermobeacon"
         assert sensor_msg["type"] == "Lanyard/mini hygrometer"
         assert sensor_msg["mac"] == "70F100000EDC"
         assert sensor_msg["packet"] == "no packet id"

@@ -1,19 +1,16 @@
 """Parser for Almendo bluSensor BLE advertisements"""
 import logging
 from struct import unpack
-from .helpers import (
-    to_mac,
-    to_unformatted_mac,
-)
+
+from .helpers import to_mac, to_unformatted_mac
 
 _LOGGER = logging.getLogger(__name__)
 
 
-def parse_almendo(self, data, source_mac, rssi):
+def parse_almendo(self, data: bytes, mac: bytes):
     """Almendo parser"""
     result = {
-        "mac": to_unformatted_mac(source_mac),
-        "rssi": rssi,
+        "mac": to_unformatted_mac(mac),
         "data": False,
         "packet": "no packet id"
     }
@@ -21,10 +18,14 @@ def parse_almendo(self, data, source_mac, rssi):
     if adstruct_type == 0xFF:
         comp_id = (data[3] << 8) | data[2]
         if comp_id == 0x06E8:
-            # version, device_type, device_model, hw_revistion,
-            # status_bits, sstatus_code
-            version, _, dmodel, _, _, _ = data[4:10]
-            if version == 1 and dmodel == 0x0A:
+            if len(data) < 10:
+                result = None
+            elif data[4] == 1 and data[6] == 0x0A and len(data) < 20:
+                result = None
+            elif data[4] == 1 and data[6] == 0x0A:
+                # version, device_type, device_model, hw_revistion,
+                # status_bits, sstatus_code
+                version, _, dmodel, _, _, _ = data[4:10]
                 # Almendo bluSensor V1 format (BSP02AIQ)
                 # sensor_state, temp, humi, co2e, tvoc, aiq
                 (_, temp, humi, co2e, tvoc, aqi) = unpack(
@@ -50,25 +51,18 @@ def parse_almendo(self, data, source_mac, rssi):
     if result is None:
         if self.report_unknown == "Almendo":
             _LOGGER.info(
-                "BLE ADV from UNKNOWN Almendo DEVICE: RSSI: %s, "
+                "BLE ADV from UNKNOWN Almendo DEVICE: "
                 "MAC: %s, ADV: %s",
-                rssi,
-                to_mac(source_mac),
+                to_mac(mac),
                 data.hex(),
             )
         return None
-    # check for MAC presence in sensor whitelist, if needed
-    if self.discovery is False and source_mac not in self.sensor_whitelist:
-        _LOGGER.debug(
-            "Discovery is disabled. MAC: %s is not whitelisted!",
-            to_mac(source_mac),
-        )
-        return None
+
     if version != 1:
         _LOGGER.info(
             "Protocol version %i on device %s not yet known "
             "by the Almendo parser",
             version,
-            to_mac(source_mac),
+            to_mac(mac),
         )
     return result

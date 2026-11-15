@@ -1,9 +1,7 @@
 """Parser for Laica Smart Scale BLE advertisements"""
 import logging
 
-from .helpers import (
-    to_unformatted_mac,
-)
+from .helpers import to_unformatted_mac
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -32,15 +30,14 @@ def read_impedance(data):
     return impedance
 
 
-def parse_laica(self, data, source_mac, rssi):
+def parse_laica(self, data: bytes, mac: bytes):
     """Parser for Laica sensors"""
     xvalue = data[4:]
 
     result = {
         "type": "Laica Smart Scale",
         "firmware": "Laica",
-        "mac": to_unformatted_mac(source_mac),
-        "rssi": rssi,
+        "mac": to_unformatted_mac(mac),
         "data": False,
     }
 
@@ -60,7 +57,7 @@ def parse_laica(self, data, source_mac, rssi):
     # Check for duplicate messages
     packet_id = xvalue.hex()
     try:
-        prev_packet = self.lpacket_ids[source_mac]
+        prev_packet = self.lpacket_ids[mac]
     except KeyError:
         # start with empty first packet
         prev_packet = None
@@ -68,7 +65,7 @@ def parse_laica(self, data, source_mac, rssi):
         # only process new messages
         if self.filter_duplicates is True:
             return None
-    self.lpacket_ids[source_mac] = packet_id
+    self.lpacket_ids[mac] = packet_id
 
     result.update({
         "packet": packet_id,

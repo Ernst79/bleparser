@@ -2,14 +2,11 @@
 import logging
 import math
 import struct
+from datetime import datetime, timezone
+
 from Cryptodome.Cipher import AES
 
-from datetime import datetime
-
-from .helpers import (
-    to_mac,
-    to_unformatted_mac,
-)
+from .helpers import to_mac, to_unformatted_mac
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -21,6 +18,8 @@ XIAOMI_TYPE_DICT = {
     0x066F: "CGDK2",
     0x0347: "CGG1",
     0x0B48: "CGG1-ENCRYPTED",
+    0x5808: "CGG3",
+    0x4F59: "CGDK3",
     0x03D6: "CGH1",
     0x0A83: "CGPR1",
     0x03BC: "GCLS002",
@@ -31,27 +30,38 @@ XIAOMI_TYPE_DICT = {
     0x1568: "K9B-1BTN",
     0x1569: "K9B-2BTN",
     0x0DFD: "K9B-3BTN",
+    0x1C10: "K9BB-1BTN",
     0x1889: "MS1BB(MI)",
     0x2AEB: "HS1BB(MI)",
     0x01AA: "LYWSDCGQ",
     0x045B: "LYWSD02",
     0x16e4: "LYWSD02MMC",
+    0x2542: "LYWSD02MMC",
     0x055B: "LYWSD03MMC",
     0x098B: "MCCGQ02HL",
     0x06d3: "MHO-C303",
     0x0387: "MHO-C401",
     0x07F6: "MJYD02YL",
     0x04E9: "MJZNMSQ01YD",
+    0x2832: "MJWSD05MMC",
+    0x5BEA: "MJWSD06MMC",
+    0x55B5: "MJWSD06MMC",
+    0x9AB9: "MJWSD07MMC",
     0x00DB: "MMC-T201-1",
+    0x0391: "MMC-W505",
     0x03DD: "MUE4094RT",
     0x0489: "M1S-T500",
+    0x0806: "T700",
+    0x1790: "T700i",
     0x0A8D: "RTCGQ02LM",
     0x0863: "SJWS01LM",
     0x045C: "V-SK152",
     0x040A: "WX08ZM",
     0x04E1: "XMMF01JQD",
+    0x4683: "XMOSB01XS",
     0x1203: "XMWSDJ04MMC",
     0x1949: "XMWXKG01YL",
+    0x2387: "XMWXKG01LM",
     0x098C: "XMZNMST02YD",
     0x0784: "XMZNMS04LM",
     0x0E39: "XMZNMS08LM",
@@ -69,6 +79,17 @@ XIAOMI_TYPE_DICT = {
     0x0DE7: "SU001-T",
     0x20DB: "MJZNZ018H",
     0x18E3: "ZX1",
+    0x11C2: "SV40",
+    0x3F0F: "RS1BB",
+    0x38BB: "PTX",
+    0x3531: "XMPIRO2SXS",
+    0x3F4C: "PS1BB",
+    0x3A61: "KS1",
+    0x3E17: "KS1BP",
+    0x3BD5: "MJTZC01YM",
+    0x50FB: "ES3",
+    0x5DB1: "MBS17",
+    0x64C5: "PTX-F1-Display"
 }
 
 # Structured objects for data conversions
@@ -216,16 +237,16 @@ def obj0007(xobj):
 
 def obj0008(xobj, device_type):
     """armed away"""
-    returnData = {}
+    return_data = {}
     value = xobj[0] ^ 1
-    returnData.update({'armed away': value})
+    return_data.update({'armed away': value})
     if len(xobj) == 5:
         timestamp = int.from_bytes(xobj[1:], 'little')
         timestamp = datetime.fromtimestamp(timestamp).isoformat()
-        returnData.update({'timestamp': timestamp})
+        return_data.update({'timestamp': timestamp})
     # Lift up door handle outside the door sends this event from DSL-C08.
     if device_type == "DSL-C08":
-        return{
+        return {
             "lock": value,
             "locktype": 'lock',
             "action": 'lock outside the door',
@@ -234,7 +255,7 @@ def obj0008(xobj, device_type):
             "key id": None,
             "timestamp": None,
         }
-    return returnData
+    return return_data
 
 
 def obj0010(xobj):
@@ -244,11 +265,25 @@ def obj0010(xobj):
             return {'toothbrush': 1}
         else:
             return {'toothbrush': 1, 'counter': xobj[1]}
-    else:
+    elif xobj[0] == 1:
         if len(xobj) == 1:
             return {'toothbrush': 0}
         else:
             return {'toothbrush': 0, 'score': xobj[1]}
+    else:
+        return {}
+
+
+def obj000a(xobj):
+    """Body temperature"""
+    if len(xobj) == 2:
+        (temp,) = T_STRUCT.unpack(xobj)
+        if temp:
+            return {"temperature": temp / 100}
+        else:
+            return {}
+    else:
+        return {}
 
 
 def obj000b(xobj, device_type):
@@ -397,10 +432,10 @@ def obj1001(xobj, device_type):
         elif button_type == 8:
             bathroom_remote_command = "heat"
 
-        # press type and dimmer
+        # press type and dimmer steps
         button_press_type = "no press"
         btn_switch_press_type = "no press"
-        dimmer = None
+        steps = None
 
         if press == 0:
             button_press_type = "single press"
@@ -414,24 +449,24 @@ def obj1001(xobj, device_type):
         elif press == 3:
             if button_type == 0:
                 button_press_type = "short press"
-                dimmer = value
+                steps = value
             if button_type == 1:
                 button_press_type = "long press"
-                dimmer = value
+                steps = value
         elif press == 4:
             if button_type == 0:
                 if value <= 127:
                     button_press_type = "rotate right"
-                    dimmer = value
+                    steps = value
                 else:
                     button_press_type = "rotate left"
-                    dimmer = 256 - value
+                    steps = 256 - value
             elif button_type <= 127:
                 button_press_type = "rotate right (pressed)"
-                dimmer = button_type
+                steps = button_type
             else:
                 button_press_type = "rotate left (pressed)"
-                dimmer = 256 - button_type
+                steps = 256 - button_type
         elif press == 5:
             button_press_type = "short press"
         elif press == 6:
@@ -461,8 +496,8 @@ def obj1001(xobj, device_type):
             result["bathroom heater remote"] = bathroom_remote_command
             result["button"] = button_press_type
         elif device_type == "YLKG07YL/YLKG08YL":
-            result["dimmer"] = dimmer
-            result["button"] = button_press_type
+            result["steps"] = steps
+            result["dimmer"] = button_press_type
         elif device_type == "K9B-1BTN":
             result["button switch"] = btn_switch_press_type
             result["one btn switch"] = one_btn_switch
@@ -481,11 +516,11 @@ def obj1001(xobj, device_type):
             if three_btn_switch_right:
                 result["three btn switch right"] = three_btn_switch_right
         else:
-            return None
+            return {}
         return result
 
     else:
-        return None
+        return {}
 
 
 def obj1004(xobj):
@@ -554,17 +589,17 @@ def obj1013(xobj):
 
 
 def obj1014(xobj):
-    """Moisture"""
-    return {"moisture": xobj[0]}
+    """Moisture detected (wet/dry)"""
+    return {"moisture detected": xobj[0]}
 
 
 def obj1015(xobj):
     """Smoke"""
-    return {"smoke detector": xobj[0]}
+    return {"smoke": xobj[0]}
 
 
 def obj1017(xobj):
-    """Motion"""
+    """No motion"""
     if len(xobj) == 4:
         (no_motion_time,) = M_STRUCT.unpack(xobj)
         # seconds since last motion detected message (not used, we use motion timer in obj000f)
@@ -595,9 +630,19 @@ def obj1019(xobj):
         opening = 1
         status = "device reset"
     else:
-        opening = 0
-        status = None
+        return {}
     return {"opening": opening, "status": status}
+
+
+def obj101b(xobj):
+    """Timeout no movement"""
+    if len(xobj) == 4:
+        (no_motion_time,) = M_STRUCT.unpack(xobj)
+        # seconds since last motion detected message (not used, we use motion timer in obj000f)
+        # 0 = motion detected
+        return {"motion": 1 if no_motion_time == 0 else 0, "no motion time": no_motion_time}
+    else:
+        return {}
 
 
 def obj100a(xobj):
@@ -633,7 +678,7 @@ def obj2000(xobj):
     if len(xobj) == 5:
         (temp1, temp2, bat) = TTB_STRUCT.unpack(xobj)
         # Body temperature is calculated from the two measured temperatures.
-        # Formula is based on approximation based on values inthe app in the range 36.5 - 37.8.
+        # Formula is based on approximation based on values in the app in the range 36.5 - 37.8.
         body_temp = (
             3.71934 * pow(10, -11) * math.exp(0.69314 * temp1 / 100) - (
                 1.02801 * pow(10, -8) * math.exp(0.53871 * temp2 / 100)
@@ -644,9 +689,51 @@ def obj2000(xobj):
         return {}
 
 
+def obj3003(xobj):
+    """Brushing"""
+    result = {}
+    if len(xobj) < 5:
+        return result
+    start_obj = xobj[0]
+    if start_obj == 0:
+        # Start of brushing
+        result["toothbrush"] = 1
+        start_time = struct.unpack('<L', xobj[1:5])[0]
+        result["start time"] = datetime.fromtimestamp(
+            start_time, tz=timezone.utc
+        ).replace(tzinfo=None)
+    elif start_obj == 1:
+        # End of brushing
+        result["toothbrush"] = 0
+        end_time = struct.unpack('<L', xobj[1:5])[0]
+        result["end time"] = datetime.fromtimestamp(
+            end_time, tz=timezone.utc
+        ).replace(tzinfo=None)
+
+    if len(xobj) == 6:
+        result["score"] = xobj[5]
+    return result
+
+
 # The following data objects are device specific. For now only added for
-# LYWSD02MMC, XMWSDJ04MMC, XMWXKG01YL, LINPTECH MS1BB(MI), HS1BB(MI)
+# LYWSD02MMC, XMWSDJ04MMC, MJWSD05MMC, XMWXKG01YL, LINPTECH MS1BB(MI), HS1BB(MI), K9BB
 # https://miot-spec.org/miot-spec-v2/instances?status=all
+
+def obj4801(xobj):
+    """Temperature"""
+    (temp,) = struct.unpack("f", xobj)
+    return {"temperature": temp}
+
+
+def obj4802(xobj):
+    """Humidity"""
+    if len(xobj) == 1:
+        humi = xobj[0]
+        return {"humidity": humi}
+    else:
+        return {}
+
+
 def obj4803(xobj):
     """Battery"""
     batt = xobj[0]
@@ -672,6 +759,18 @@ def obj4805(xobj):
     return {"illuminance": illu}
 
 
+def obj4806(xobj):
+    """Moisture detected (wet/dry)"""
+    wet = xobj[0]
+    return {"moisture detected": wet}
+
+
+def obj4808(xobj):
+    """Humidity"""
+    (humi,) = struct.unpack("f", xobj)
+    return {"humidity": humi}
+
+
 def obj4810(xobj):
     """Sleep State"""
     sleep_state = xobj[0]
@@ -680,9 +779,9 @@ def obj4810(xobj):
     elif sleep_state == 1:
         return {"sleeping": 1}
     elif sleep_state == 2:
-        return{"button switch": "double press"}
+        return {"button switch": "double press"}
     else:
-        return None
+        return {}
 
 
 def obj4811(xobj):
@@ -701,6 +800,92 @@ def obj4818(xobj):
         return {}
 
 
+def obj483c(xobj):
+    """Pressure Present State"""
+    return {"pressure state": xobj[0]}
+
+
+def obj483d(xobj):
+    """Pressure Present Duration"""
+    (duration,) = struct.unpack("<I", xobj)
+    return {"pressure present duration": duration}
+
+
+def obj483e(xobj):
+    """Pressure Not Present Duration"""
+    (duration,) = struct.unpack("<I", xobj)
+    return {"pressure not present duration": duration}
+
+
+def obj483f(xobj):
+    """Pressure present time set"""
+    (duration,) = struct.unpack("<I", xobj)
+    return {"pressure present time set": duration}
+
+
+def obj4840(xobj):
+    """Pressure Not Present Time Set"""
+    (duration,) = struct.unpack("<I", xobj)
+    return {"pressure not present time set": duration}
+
+
+def obj484e(xobj, device_type=None):
+    """Occupancy Status"""
+    (occupancy,) = struct.unpack("<B", xobj)
+    # For ES3 and XMOSB01XS: This sensor is being treated as an occupancy sensor
+    if device_type in ["ES3", "XMOSB01XS"]:
+        if occupancy == 0:
+            return {"occupancy": 0}
+        else:
+            return {"occupancy": 1}
+    else:
+        # For other devices: This sensor is being treated as a motion sensor and will be using the timer in
+        # of ble_monitor to set "no motion" state
+        if occupancy == 0:
+            return {}
+        else:
+            return {"motion": 1, "motion timer": 1}
+
+
+def obj484f(xobj):
+    """Time in minutes of no motion (not used, we use 484e)"""
+    if len(xobj) == 1:
+        (no_motion_time,) = struct.unpack("<B", xobj)
+        # minutes of no motion (not used, we use motion timer in obj4a08)
+        # 0 = motion detected
+        return {"motion": 1 if no_motion_time == 0 else 0, "no motion time": no_motion_time}
+    else:
+        return {}
+
+
+def obj4850(xobj):
+    """Time in minutes with motion (not used, we use 484e)"""
+    if len(xobj) != 1:
+        return {}
+
+    (motion_time,) = struct.unpack("<B", xobj)
+    # minutes with motion (not used, we use motion timer in obj484e)
+    return {"motion time": motion_time}
+
+
+def obj4851(xobj):
+    """From miot-spec: has-someone-duration: uint8: 2 - 2 minutes, 5 - 5 minutes (not used)"""
+    if len(xobj) != 4:
+        return {}
+
+    (duration,) = struct.unpack("<I", xobj)
+    return {"duration occupancy detected": duration}
+
+
+def obj4852(xobj):
+    """From miot-spec: no-one-duration: uint8: 2/5/10/30 - 2/5/10/30 minutes (not used)"""
+    if len(xobj) != 4:
+        return {}
+
+    (duration,) = struct.unpack("<I", xobj)
+    return {"duration no occupancy detected": duration}
+
+
 def obj4a01(xobj):
     """Low Battery"""
     low_batt = xobj[0]
@@ -711,6 +896,30 @@ def obj4a08(xobj):
     """Motion detected with Illuminance in lux"""
     (illu,) = struct.unpack("f", xobj)
     return {"motion": 1, "motion timer": 1, "illuminance": illu}
+
+
+def obj4a0c(xobj):
+    """Single click PTX"""
+    return {
+        "one btn switch": "toggle",
+        "button switch": "single press",
+    }
+
+
+def obj4a0d(xobj):
+    """Double click PTX"""
+    return {
+        "one btn switch": "toggle",
+        "button switch": "double press",
+    }
+
+
+def obj4a0e(xobj):
+    """Long click PTX"""
+    return {
+        "one btn switch": "toggle",
+        "button switch": "long press",
+    }
 
 
 def obj4a0f(xobj):
@@ -757,13 +966,10 @@ def obj4a1a(xobj):
         return {}
 
 
-def obj4c02(xobj):
-    """Humidity"""
-    if len(xobj) == 1:
-        humi = xobj[0]
-        return {"humidity": humi}
-    else:
-        return {}
+def obj4a1c(xobj):
+    """Device reset"""
+    reset = xobj[0]
+    return {"reset": reset}
 
 
 def obj4c01(xobj):
@@ -771,6 +977,15 @@ def obj4c01(xobj):
     if len(xobj) == 4:
         temp = FLOAT_STRUCT.unpack(xobj)[0]
         return {"temperature": temp}
+    else:
+        return {}
+
+
+def obj4c02(xobj):
+    """Humidity"""
+    if len(xobj) == 1:
+        humi = xobj[0]
+        return {"humidity": humi}
     else:
         return {}
 
@@ -796,70 +1011,211 @@ def obj4c14(xobj):
     return {"mode": mode}
 
 
-def obj4e0c(xobj):
+def obj4e01(xobj):
+    """Low Battery"""
+    low_batt = xobj[0]
+    return {"low battery": low_batt}
+
+
+def obj4e0c(xobj, device_type):
     """Click"""
-    click = xobj[0]
-    btn_switch_press_type = "single press"
-    two_btn_switch_left = None
-    two_btn_switch_right = None
-    if click == 1:
-        two_btn_switch_left = "toggle"
-    elif click == 2:
-        two_btn_switch_right = "toggle"
-    elif click == 3:
-        two_btn_switch_left = "toggle"
-        two_btn_switch_right = "toggle"
+    if device_type == "XMWXKG01YL":
+        if not xobj:
+            return {}
+        click = xobj[0]
+        if click == 1:
+            result = {
+                "two btn switch left": "toggle",
+                "button switch": "single press",
+            }
+        elif click == 2:
+            result = {
+                "two btn switch right": "toggle",
+                "button switch": "single press",
+            }
+        elif click == 3:
+            result = {
+                "two btn switch left": "toggle",
+                "two btn switch right": "toggle",
+                "button switch": "single press",
+            }
+        else:
+            result = {}
+    elif device_type == "K9BB-1BTN":
+        if not xobj:
+            return {}
+        click = xobj[0]
+        if click == 1:
+            result = {
+                "one btn switch": "toggle",
+                "button switch": "single press",
+            }
+        elif click == 8:
+            result = {
+                "one btn switch": "toggle",
+                "button switch": "long press",
+            }
+        elif click == 15:
+            result = {
+                "one btn switch": "toggle",
+                "button switch": "double press",
+            }
+        else:
+            result = {}
+    elif device_type == "XMWXKG01LM":
+        result = {
+            "one btn switch": "toggle",
+            "button switch": "single press",
+        }
+    elif device_type == "PTX-F1-Display":
+        if not xobj:
+            return {}
+        click = xobj[0]
+        if click == 1:
+            result = {
+                "four btn switch 1": "toggle",
+                "button switch": "single press",
+            }
+        elif click == 2:
+            result = {
+                "four btn switch 2": "toggle",
+                "button switch": "single press",
+            }
+        elif click == 3:
+            result = {
+                "four btn switch 3": "toggle",
+                "button switch": "single press",
+            }
+        elif click == 4:
+            result = {
+                "four btn switch 4": "toggle",
+                "button switch": "single press",
+            }
+        else:
+            result = {}
     else:
-        btn_switch_press_type = None
-    return {
-        "two btn switch left": two_btn_switch_left,
-        "two btn switch right": two_btn_switch_right,
-        "button switch": btn_switch_press_type,
-    }
+        result = {}
+    return result
 
 
-def obj4e0d(xobj):
+def obj4e0d(xobj, device_type):
     """Double Click"""
-    click = xobj[0]
-    btn_switch_press_type = "double press"
-    two_btn_switch_left = None
-    two_btn_switch_right = None
-    if click == 1:
-        two_btn_switch_left = "toggle"
-    elif click == 2:
-        two_btn_switch_right = "toggle"
-    elif click == 3:
-        two_btn_switch_left = "toggle"
-        two_btn_switch_right = "toggle"
+    if device_type == "XMWXKG01YL":
+        if not xobj:
+            return {}
+        click = xobj[0]
+        if click == 1:
+            result = {
+                "two btn switch left": "toggle",
+                "button switch": "double press",
+            }
+        elif click == 2:
+            result = {
+                "two btn switch right": "toggle",
+                "button switch": "double press",
+            }
+        elif click == 3:
+            result = {
+                "two btn switch left": "toggle",
+                "two btn switch right": "toggle",
+                "button switch": "double press",
+            }
+        else:
+            result = {}
+    elif device_type == "XMWXKG01LM":
+        result = {
+            "one btn switch": "toggle",
+            "button switch": "double press",
+        }
+    elif device_type == "PTX-F1-Display":
+        if not xobj:
+            return {}
+        click = xobj[0]
+        if click == 1:
+            result = {
+                "four btn switch 1": "toggle",
+                "button switch": "double press",
+            }
+        elif click == 2:
+            result = {
+                "four btn switch 2": "toggle",
+                "button switch": "double press",
+            }
+        elif click == 3:
+            result = {
+                "four btn switch 3": "toggle",
+                "button switch": "double press",
+            }
+        elif click == 4:
+            result = {
+                "four btn switch 4": "toggle",
+                "button switch": "double press",
+            }
+        else:
+            result = {}
     else:
-        btn_switch_press_type = None
-    return {
-        "two btn switch left": two_btn_switch_left,
-        "two btn switch right": two_btn_switch_right,
-        "button switch": btn_switch_press_type,
-    }
+        result = {}
+    return result
 
 
-def obj4e0e(xobj):
+def obj4e0e(xobj, device_type):
     """Long Press"""
-    click = xobj[0]
-    btn_switch_press_type = "long press"
-    two_btn_switch_left = None
-    two_btn_switch_right = None
-    if click == 1:
-        two_btn_switch_left = "toggle"
-    elif click == 2:
-        two_btn_switch_right = "toggle"
-    elif click == 3:
-        two_btn_switch_left = "toggle"
-        two_btn_switch_right = "toggle"
+    if device_type == "XMWXKG01YL":
+        if not xobj:
+            return {}
+        click = xobj[0]
+        if click == 1:
+            result = {
+                "two btn switch left": "toggle",
+                "button switch": "long press",
+            }
+        elif click == 2:
+            result = {
+                "two btn switch right": "toggle",
+                "button switch": "long press",
+            }
+        elif click == 3:
+            result = {
+                "two btn switch left": "toggle",
+                "two btn switch right": "toggle",
+                "button switch": "long press",
+            }
+        else:
+            result = {}
+    elif device_type == "XMWXKG01LM":
+        result = {
+            "one btn switch": "toggle",
+            "button switch": "long press",
+        }
+    elif device_type == "PTX-F1-Display":
+        if not xobj:
+            return {}
+        click = xobj[0]
+        if click == 1:
+            result = {
+                "four btn switch 1": "toggle",
+                "button switch": "long press",
+            }
+        elif click == 2:
+            result = {
+                "four btn switch 2": "toggle",
+                "button switch": "long press",
+            }
+        elif click == 3:
+            result = {
+                "four btn switch 3": "toggle",
+                "button switch": "long press",
+            }
+        elif click == 4:
+            result = {
+                "four btn switch 4": "toggle",
+                "button switch": "long press",
+            }
+        else:
+            result = {}
     else:
-        btn_switch_press_type = None
-    return {
-        "two btn switch left": two_btn_switch_left,
-        "two btn switch right": two_btn_switch_right,
-        "button switch": btn_switch_press_type,
-    }
+        result = {}
+    return result
 
 
 def obj4e16(xobj):
@@ -868,7 +1224,7 @@ def obj4e16(xobj):
     if event == 1:
         return {"bed occupancy": 1}
     else:
-        return None
+        return {}
 
 
 def obj4e17(xobj):
@@ -877,7 +1233,18 @@ def obj4e17(xobj):
     if event == 1:
         return {"bed occupancy": 0}
     else:
-        return None
+        return {}
+
+
+def obj4e1c(xobj):
+    """Device reset"""
+    return {"device reset": xobj[0]}
+
+
+def obj5003(xobj):
+    """Battery"""
+    batt = xobj[0]
+    return {"battery": batt}
 
 
 def obj5010(xobj):
@@ -888,9 +1255,9 @@ def obj5010(xobj):
     elif sleep_state == 1:
         return {"sleeping": 1}
     elif sleep_state == 2:
-        return{"button": "double press"}
+        return {"button": "double press"}
     else:
-        return None
+        return {}
 
 
 def obj5011(xobj):
@@ -903,10 +1270,126 @@ def obj5403(xobj):
     return {"battery": xobj[0]}
 
 
+def obj5414(xobj):
+    """Mode"""
+    mode = xobj[0]
+    return {"mode": mode}
+
+
+def obj5c01(xobj):
+    """Temperature"""
+    if len(xobj) == 4:
+        temp = FLOAT_STRUCT.unpack(xobj)[0]
+        return {"temperature": temp}
+    else:
+        return {}
+
+
+def obj5c02(xobj):
+    """Humidity"""
+    if len(xobj) == 1:
+        return {"humidity": xobj[0]}
+    else:
+        return {}
+
+
 def obj5601(xobj):
     """Low Battery"""
     low_batt = xobj[0]
     return {"low battery": low_batt}
+
+
+def obj560c(xobj, device_type):
+    """Click"""
+    if device_type in ["KS1", "KS1BP"]:
+        click = xobj[0]
+        if click == 1:
+            result = {
+                "four btn switch 1": "toggle",
+                "button switch": "single press",
+            }
+        elif click == 2:
+            result = {
+                "four btn switch 2": "toggle",
+                "button switch": "single press",
+            }
+        elif click == 3:
+            result = {
+                "four btn switch 3": "toggle",
+                "button switch": "single press",
+            }
+        elif click == 4:
+            result = {
+                "four btn switch 4": "toggle",
+                "button switch": "single press",
+            }
+        else:
+            result = {}
+        return result
+    else:
+        return {}
+
+
+def obj560d(xobj, device_type):
+    """Click"""
+    if device_type in ["KS1", "KS1BP"]:
+        click = xobj[0]
+        if click == 1:
+            result = {
+                "four btn switch 1": "toggle",
+                "button switch": "double press",
+            }
+        elif click == 2:
+            result = {
+                "four btn switch 2": "toggle",
+                "button switch": "double press",
+            }
+        elif click == 3:
+            result = {
+                "four btn switch 3": "toggle",
+                "button switch": "double press",
+            }
+        elif click == 4:
+            result = {
+                "four btn switch 4": "toggle",
+                "button switch": "double press",
+            }
+        else:
+            result = {}
+        return result
+    else:
+        return {}
+
+
+def obj560e(xobj, device_type):
+    """Click"""
+    if device_type in ["KS1", "KS1BP"]:
+        click = xobj[0]
+        if click == 1:
+            result = {
+                "four btn switch 1": "toggle",
+                "button switch": "long press",
+            }
+        elif click == 2:
+            result = {
+                "four btn switch 2": "toggle",
+                "button switch": "long press",
+            }
+        elif click == 3:
+            result = {
+                "four btn switch 3": "toggle",
+                "button switch": "long press",
+            }
+        elif click == 4:
+            result = {
+                "four btn switch 4": "toggle",
+                "button switch": "long press",
+            }
+        else:
+            result = {}
+        return result
+    else:
+        return {}
 
 
 def obj5a16(xobj):
@@ -917,9 +1400,57 @@ def obj5a16(xobj):
     elif event == 2:
         return {"bed occupancy": 0}
     elif event == 3:
-        return{"button": "double press"}
+        return {"button": "double press"}
     else:
+        return {}
+
+
+def obj601d(xobj):
+    """CO2"""
+    if len(xobj) == 2:
+        (co2,) = H_STRUCT.unpack(xobj)
+        return {"co2": co2}
+    else:
+        return {}
+
+
+def obj6012(xobj):
+    """Humidity"""
+    return obj4802(xobj)
+
+
+def obj605d(xobj):
+    """Temperature"""
+    if len(xobj) == 1:
+        temp = xobj[0]
+        return {"temperature": temp}
+    else:
+        return {}
+
+
+def obj6e16(xobj):
+    """Body Composition Scale"""
+    (profile_id, data, _) = struct.unpack("<BII", xobj)
+    if not data:
         return None
+
+    result = {}
+    mass = data & 0x7FF
+    heart_rate = (data >> 11) & 0x7F
+    impedance = data >> 18
+
+    if mass != 0:
+        result.update({"weight": mass / 10})
+    if 0 < heart_rate < 127:
+        result.update({"heart rate": heart_rate + 50})
+    if impedance != 0:
+        if mass != 0:
+            result.update({"impedance": impedance / 10})
+        else:
+            result.update({"impedance low": impedance / 10})
+
+    result.update({"profile id": profile_id})
+    return result
 
 
 # Dataobject dictionary
@@ -930,6 +1461,7 @@ xiaomi_dataobject_dict = {
     0x0007: obj0007,
     0x0008: obj0008,
     0x0010: obj0010,
+    0x000A: obj000a,
     0x000B: obj000b,
     0x000F: obj000f,
     0x1001: obj1001,
@@ -947,41 +1479,74 @@ xiaomi_dataobject_dict = {
     0x1017: obj1017,
     0x1018: obj1018,
     0x1019: obj1019,
+    0x101B: obj101b,
     0x100A: obj100a,
     0x100D: obj100d,
     0x100E: obj100e,
     0x2000: obj2000,
+    0x3003: obj3003,
+    0x4801: obj4801,
+    0x4802: obj4802,
     0x4803: obj4803,
     0x4804: obj4804,
     0x4805: obj4805,
+    0x4806: obj4806,
+    0x4808: obj4808,
     0x4810: obj4810,
     0x4811: obj4811,
     0x4818: obj4818,
+    0x483c: obj483c,
+    0x483d: obj483d,
+    0x483e: obj483e,
+    0x483f: obj483f,
+    0x4840: obj4840,
+    0x484e: obj484e,
+    0x484f: obj484f,
+    0x4850: obj4850,
+    0x4851: obj4851,
+    0x4852: obj4852,
     0x4a01: obj4a01,
     0x4a08: obj4a08,
+    0x4a0c: obj4a0c,
+    0x4a0d: obj4a0d,
+    0x4a0e: obj4a0e,
     0x4a0f: obj4a0f,
     0x4a12: obj4a12,
     0x4a13: obj4a13,
     0x4a1a: obj4a1a,
+    0x4a1c: obj4a1c,
     0x4c01: obj4c01,
     0x4c02: obj4c02,
     0x4c03: obj4c03,
     0x4c08: obj4c08,
     0x4c14: obj4c14,
+    0x4e01: obj4e01,
     0x4e0c: obj4e0c,
     0x4e0d: obj4e0d,
     0x4e0e: obj4e0e,
     0x4e16: obj4e16,
     0x4e17: obj4e17,
+    0x4e1c: obj4e1c,
+    0x5003: obj5003,
     0x5010: obj5010,
     0x5011: obj5011,
     0x5403: obj5403,
+    0x5414: obj5414,
+    0x5c01: obj5c01,
+    0x5c02: obj5c02,
     0x5601: obj5601,
+    0x560c: obj560c,
+    0x560d: obj560d,
+    0x560e: obj560e,
     0x5a16: obj5a16,
+    0x601d: obj601d,
+    0x6012: obj6012,
+    0x605d: obj605d,
+    0x6e16: obj6e16
 }
 
 
-def parse_xiaomi(self, data, source_mac, rssi):
+def parse_xiaomi(self, data: bytes, mac: bytes):
     """Parser for Xiaomi sensors"""
     # check for adstruc length
     i = 9  # till Frame Counter
@@ -1021,11 +1586,9 @@ def parse_xiaomi(self, data, source_mac, rssi):
             return None
         xiaomi_mac_reversed = data[9:15]
         xiaomi_mac = xiaomi_mac_reversed[::-1]
-        if xiaomi_mac != source_mac:
+        if xiaomi_mac != mac:
             _LOGGER.debug("Xiaomi MAC address doesn't match data MAC address. Data: %s", data.hex())
             return None
-    else:
-        xiaomi_mac = source_mac
 
     # determine the device type
     device_id = data[6] + (data[7] << 8)
@@ -1034,9 +1597,8 @@ def parse_xiaomi(self, data, source_mac, rssi):
     except KeyError:
         if self.report_unknown == "Xiaomi":
             _LOGGER.info(
-                "BLE ADV from UNKNOWN Xiaomi device: RSSI: %s, MAC: %s, ADV: %s",
-                rssi,
-                to_mac(source_mac),
+                "BLE ADV from UNKNOWN Xiaomi device: MAC: %s, ADV: %s",
+                to_mac(mac),
                 data.hex()
             )
         _LOGGER.debug("Unknown Xiaomi device found. Data: %s", data.hex())
@@ -1062,14 +1624,9 @@ def parse_xiaomi(self, data, source_mac, rssi):
     elif frctrl_auth_mode == 2:
         sinfo += ', Standard certification'
 
-    # check for MAC presence in sensor whitelist, if needed
-    if self.discovery is False and xiaomi_mac not in self.sensor_whitelist:
-        _LOGGER.debug("Discovery is disabled. MAC: %s is not whitelisted!", to_mac(xiaomi_mac))
-        return None
-
     # check for unique packet_id and advertisement priority
     try:
-        prev_packet = self.lpacket_ids[xiaomi_mac]
+        prev_packet = self.lpacket_ids[mac]
     except KeyError:
         # start with empty first packet
         prev_packet = None
@@ -1078,17 +1635,19 @@ def parse_xiaomi(self, data, source_mac, rssi):
         # Check for adv priority and packet_id for devices that can also send in ATC format
         adv_priority = 19
         try:
-            prev_adv_priority = self.adv_priority[xiaomi_mac]
+            prev_adv_priority = self.adv_priority[mac]
         except KeyError:
             # start with initial adv priority
             prev_adv_priority = 0
         if adv_priority > prev_adv_priority:
             # always process advertisements with a higher priority
-            self.adv_priority[xiaomi_mac] = adv_priority
+            self.adv_priority[mac] = adv_priority
         elif adv_priority == prev_adv_priority:
             # only process messages with same priority that have a unique packet id
             if prev_packet == packet_id:
                 if self.filter_duplicates is True:
+                    if _LOGGER.isEnabledFor(logging.DEBUG):
+                        _LOGGER.debug("Duplicate packet received, not processing. Data: %s", data.hex())
                     return None
                 else:
                     pass
@@ -1097,14 +1656,18 @@ def parse_xiaomi(self, data, source_mac, rssi):
         else:
             # do not process advertisements with lower priority (ATC advertisements will be used instead)
             prev_adv_priority -= 1
-            self.adv_priority[xiaomi_mac] = prev_adv_priority
+            self.adv_priority[mac] = prev_adv_priority
+            if _LOGGER.isEnabledFor(logging.DEBUG):
+                _LOGGER.debug("Lower priority advertisement received, not processing. Data: %s", data.hex())
             return None
     else:
         if prev_packet == packet_id:
             if self.filter_duplicates is True:
                 # only process messages with highest priority and messages with unique packet id
+                if _LOGGER.isEnabledFor(logging.DEBUG):
+                    _LOGGER.debug("Duplicate packet received, not processing. Data: %s", data.hex())
                 return None
-    self.lpacket_ids[xiaomi_mac] = packet_id
+    self.lpacket_ids[mac] = packet_id
 
     # check for capability byte present
     if frctrl_capability_include != 0:
@@ -1129,9 +1692,9 @@ def parse_xiaomi(self, data, source_mac, rssi):
             sinfo += ', Encryption'
             firmware = "Xiaomi (MiBeacon V" + str(frctrl_version) + " encrypted)"
             if frctrl_version <= 3:
-                payload = decrypt_mibeacon_legacy(self, data, i, xiaomi_mac)
+                payload = decrypt_mibeacon_legacy(self, data, i, mac)
             else:
-                payload = decrypt_mibeacon_v4_v5(self, data, i, xiaomi_mac)
+                payload = decrypt_mibeacon_v4_v5(self, data, i, mac)
         else:   # No encryption
             # check minimum advertisement length with data
             firmware = "Xiaomi (MiBeacon V" + str(frctrl_version) + ")"
@@ -1146,8 +1709,7 @@ def parse_xiaomi(self, data, source_mac, rssi):
         return None
 
     result = {
-        "rssi": rssi,
-        "mac": to_unformatted_mac(xiaomi_mac),
+        "mac": to_unformatted_mac(mac),
         "type": device_type,
         "packet": packet_id,
         "firmware": firmware,
@@ -1169,10 +1731,25 @@ def parse_xiaomi(self, data, source_mac, rssi):
                 _LOGGER.debug("Invalid payload data length, payload: %s", payload.hex())
                 break
             dobject = payload[payload_start + 3:next_start]
-            if obj_length != 0:
+            if dobject and obj_length != 0 or hex(obj_typecode) in [
+                "0x4a0c", "0x4a0d", "0x4a0e", "0x4e0c", "0x4e0d", "0x4e0e"
+            ]:
                 resfunc = xiaomi_dataobject_dict.get(obj_typecode, None)
                 if resfunc:
-                    if hex(obj_typecode) in ["0x8", "0x100e", "0x1001", "0xf", "0xb"]:
+                    if hex(obj_typecode) in [
+                        "0x8",
+                        "0x100e",
+                        "0x1001",
+                        "0xf",
+                        "0xb",
+                        "0x484e",
+                        "0x4e0c",
+                        "0x4e0d",
+                        "0x4e0e",
+                        "0x560c",
+                        "0x560d",
+                        "0x560e",
+                    ]:
                         result.update(resfunc(dobject, device_type))
                     else:
                         result.update(resfunc(dobject))
@@ -1184,23 +1761,27 @@ def parse_xiaomi(self, data, source_mac, rssi):
     return result
 
 
-def decrypt_mibeacon_v4_v5(self, data, i, xiaomi_mac):
+def decrypt_mibeacon_v4_v5(self, data, i, mac):
     """decrypt MiBeacon v4/v5 encrypted advertisements"""
     # check for minimum length of encrypted advertisement
     if len(data) < i + 9:
         _LOGGER.debug("Invalid data length (for decryption), adv: %s", data.hex())
     # try to find encryption key for current device
     try:
-        key = self.aeskeys[xiaomi_mac]
+        key = self.aeskeys[mac]
         if len(key) != 16:
             _LOGGER.error("Encryption key should be 16 bytes (32 characters) long")
             return None
     except KeyError:
         # no encryption key found
-        _LOGGER.error("No encryption key found for device with MAC %s", to_mac(xiaomi_mac))
+        if mac not in self.no_key_message:
+            _LOGGER.error("No encryption key found for device with MAC %s", to_mac(mac))
+            self.no_key_message.append(mac)
+        if _LOGGER.isEnabledFor(logging.DEBUG):
+            _LOGGER.debug("Key error for device with MAC %s, cannot decrypt data. Data: %s", to_mac(mac), data.hex())
         return None
 
-    nonce = b"".join([xiaomi_mac[::-1], data[6:9], data[-7:-4]])
+    nonce = b"".join([mac[::-1], data[6:9], data[-7:-4]])
     aad = b"\x11"
     token = data[-4:]
     cipherpayload = data[i:-7]
@@ -1218,30 +1799,30 @@ def decrypt_mibeacon_v4_v5(self, data, i, xiaomi_mac):
     if decrypted_payload is None:
         _LOGGER.error(
             "Decryption failed for %s, decrypted payload is None",
-            to_mac(xiaomi_mac),
+            to_mac(mac),
         )
         return None
     return decrypted_payload
 
 
-def decrypt_mibeacon_legacy(self, data, i, xiaomi_mac):
+def decrypt_mibeacon_legacy(self, data, i, mac):
     """decrypt MiBeacon v2/v3 encrypted advertisements"""
     # check for minimum length of encrypted advertisement
     if len(data) < i + 7:
         _LOGGER.debug("Invalid data length (for decryption), adv: %s", data.hex())
     # try to find encryption key for current device
     try:
-        aeskey = self.aeskeys[xiaomi_mac]
+        aeskey = self.aeskeys[mac]
         if len(aeskey) != 12:
             _LOGGER.error("Encryption key should be 12 bytes (24 characters) long")
             return None
         key = b"".join([aeskey[0:6], bytes.fromhex("8d3d3c97"), aeskey[6:]])
     except KeyError:
         # no encryption key found
-        _LOGGER.error("No encryption key found for device with MAC %s", to_mac(xiaomi_mac))
+        _LOGGER.error("No encryption key found for device with MAC %s", to_mac(mac))
         return None
 
-    nonce = b"".join([data[4:9], data[-4:-1], xiaomi_mac[::-1][:-1]])
+    nonce = b"".join([data[4:9], data[-4:-1], mac[::-1][:-1]])
     aad = b"\x11"
     cipherpayload = data[i:-4]
     cipher = AES.new(key, AES.MODE_CCM, nonce=nonce, mac_len=4)
@@ -1257,7 +1838,7 @@ def decrypt_mibeacon_legacy(self, data, i, xiaomi_mac):
     if decrypted_payload is None:
         _LOGGER.warning(
             "Decryption failed for %s, decrypted payload is None",
-            to_mac(xiaomi_mac),
+            to_mac(mac),
         )
         return None
     return decrypted_payload

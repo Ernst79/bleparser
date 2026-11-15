@@ -3,7 +3,7 @@ from bleparser import BleParser
 
 
 class TestRuuviTag:
-
+    """Tests for the RuuviTag parser"""
     def test_ruuvitag_v2(self):
         """Test ruuvitag v2 parser."""
         data_string = "043E2A0201030157168974A5F41E0201060303AAFE1616AAFE10EE037275752E76692F23416A7759414D4666CD"
@@ -91,3 +91,13 @@ class TestRuuviTag:
         assert sensor_msg["motion"] == 0
         assert sensor_msg["motion timer"] == 0
         assert sensor_msg["rssi"] == -68
+
+    def test_ruuvitag_v3_too_short_returns_cleanly(self):
+        """A Ruuvitag V3 advertisement shorter than the required payload must not raise."""
+        data_string = "043e1b02010301f27a52fad4cd0f0201040bff990403291a1ece1efc189e"
+        data = bytes(bytearray.fromhex(data_string))
+        # pylint: disable=unused-variable
+        ble_parser = BleParser()
+        sensor_msg, tracker_msg = ble_parser.parse_raw_data(data)
+
+        assert sensor_msg is None
